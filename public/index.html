@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marzena — Privat</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+<style>
+  :root {
+    --bg: #f9f5fc;
+    --card: #ffffff;
+    --card-hover: #fdf9ff;
+    --border: #e6daf0;
+    --text: #2d2440;
+    --text-secondary: #8a7a9e;
+    --accent: #b08acc;
+    --accent-hover: #9a74b8;
+    --lavender: #b08acc;
+    --rose: #d4899e;
+    --peach: #d4a889;
+    --mint: #89b8a8;
+    --sky: #89a8d4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  /* PARALLAX HERO */
+  .hero {
+    position: relative;
+    width: 100%;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f5eefa 0%, #fce8ef 30%, #fef0e8 60%, #f5eefa 100%);
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 120%;
+    top: -10%;
+    object-fit: cover;
+    z-index: 0;
+    will-change: transform;
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(249,245,252,0.6) 100%);
+    z-index: 1;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 72px 20px;
+  }
+
+  .hero-greeting {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+  }
+
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    color: var(--text);
+    text-align: center;
+    text-shadow: 0 1px 3px rgba(255,255,255,0.7);
+  }
+
+  .hero p {
+    font-size: 16px;
+    color: var(--text-secondary);
+    text-align: center;
+    max-width: 460px;
+  }
+
+  /* APPS GRID */
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 48px 20px 80px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+
+  .apps-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 60px;
+  }
+
+  .app-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 24px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(45,36,64,0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .app-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 28px rgba(45,36,64,0.1);
+    border-color: var(--accent);
+    background: var(--card-hover);
+  }
+
+  .app-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+  }
+
+  .app-card h2 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .app-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .app-status {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-top: 4px;
+  }
+
+  .status-live {
+    background: rgba(92,184,122,0.12);
+    color: #3d8a56;
+  }
+
+  /* Odd last card fills full width */
+  .apps-grid .app-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 32px 20px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+
+  footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  footer a:hover {
+    text-decoration: underline;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 700px) {
+    .hero h1 { font-size: 32px; }
+    .hero { min-height: 300px; }
+    .apps-grid { grid-template-columns: 1fr; }
+    .container { padding: 32px 16px 60px; }
+    .hero-content { padding: 56px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <img class="hero-bg" id="heroBg" src="/hero.png" alt="" onerror="this.style.display='none'">
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <span class="hero-greeting" id="greeting"></span>
+    <h1>Mitt Privata</h1>
+    <p>Listor, checklistor och allt annat som gör vardagen lite enklare</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="section-title">Mina listor</div>
+  <div class="apps-grid">
+
+    <a class="app-card" href="https://privat-checklista.vercel.app" target="_blank">
+      <div class="app-icon" style="background: rgba(176,138,204,0.12); color: var(--lavender);">&#128141;</div>
+      <h2>Håkan — Todo</h2>
+      <p>Todo-lista och checklistor för allt som rör Håkan. Håll koll och bocka av.</p>
+      <span class="app-status status-live">Live</span>
+    </a>
+
+    <a class="app-card" href="https://adeocare-todo.vercel.app" target="_blank">
+      <div class="app-icon" style="background: rgba(212,136,137,0.12); color: var(--rose);">&#127968;</div>
+      <h2>Adeocare — Todo</h2>
+      <p>Todo-lista för Adeocare-relaterade uppgifter. Allt samlat och organiserat.</p>
+      <span class="app-status status-live">Live</span>
+    </a>
+
+    <a class="app-card" href="https://yobedoo-tavla.vercel.app" target="_blank">
+      <div class="app-icon" style="background: rgba(212,168,137,0.12); color: var(--peach);">&#127912;</div>
+      <h2>Yobedoo — Mingeltavla</h2>
+      <p>Kreativ mingeltavla för Yobedoo. Visuell planering i stort format.</p>
+      <span class="app-status status-live">Live</span>
+    </a>
+
+  </div>
+
+</div>
+
+<footer>
+  <a href="https://mlc-workspace.vercel.app" target="_blank">MLC Workspace</a> &mdash; Tillbaka till jobbet
+</footer>
+
+<script>
+  // Parallax effect on hero image
+  const heroBg = document.getElementById('heroBg');
+  if (heroBg) {
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      heroBg.style.transform = `translateY(${scrollY * 0.4}px)`;
+    }, { passive: true });
+  }
+
+  // Dynamic greeting based on time of day
+  const greetingEl = document.getElementById('greeting');
+  if (greetingEl) {
+    const hour = new Date().getHours();
+    if (hour < 6) greetingEl.textContent = 'God natt, Marzena';
+    else if (hour < 10) greetingEl.textContent = 'God morgon, Marzena';
+    else if (hour < 13) greetingEl.textContent = 'God förmiddag, Marzena';
+    else if (hour < 17) greetingEl.textContent = 'God eftermiddag, Marzena';
+    else if (hour < 21) greetingEl.textContent = 'God kväll, Marzena';
+    else greetingEl.textContent = 'God kväll, Marzena';
+  }
+</script>
+
+</body>
+</html>
