@@ -7,10 +7,9 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
 <style>
   :root {
-    --bg: #f9f5fc;
     --card: #ffffff;
-    --card-hover: #fdf9ff;
-    --border: #e6daf0;
+    --card-hover: #fffbfd;
+    --border: rgba(200,180,210,0.3);
     --text: #2d2440;
     --text-secondary: #8a7a9e;
     --accent: #b08acc;
@@ -26,7 +25,7 @@
 
   body {
     font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
+    background: #ffffff;
     color: var(--text);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
@@ -34,7 +33,23 @@
     overflow-x: hidden;
   }
 
-  /* PARALLAX HERO */
+  /* FULL-PAGE BACKGROUND IMAGE */
+  .page-bg {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    will-change: transform;
+  }
+
+  .page-wrapper {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HERO */
   .hero {
     position: relative;
     width: 100%;
@@ -44,25 +59,6 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    background: linear-gradient(135deg, #f5eefa 0%, #fce8ef 30%, #fef0e8 60%, #f5eefa 100%);
-  }
-
-  .hero-bg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 120%;
-    top: -10%;
-    object-fit: cover;
-    z-index: 0;
-    will-change: transform;
-  }
-
-  .hero-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(249,245,252,0.6) 100%);
-    z-index: 1;
   }
 
   .hero-content {
@@ -122,7 +118,9 @@
   }
 
   .app-card {
-    background: var(--card);
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border);
     border-radius: 16px;
     padding: 32px 24px;
@@ -130,7 +128,7 @@
     text-decoration: none;
     color: var(--text);
     transition: all 0.25s ease;
-    box-shadow: 0 2px 8px rgba(45,36,64,0.05);
+    box-shadow: 0 2px 12px rgba(45,36,64,0.06);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -141,7 +139,7 @@
     transform: translateY(-4px);
     box-shadow: 0 8px 28px rgba(45,36,64,0.1);
     border-color: var(--accent);
-    background: var(--card-hover);
+    background: rgba(255,255,255,0.88);
   }
 
   .app-icon {
@@ -192,7 +190,7 @@
     padding: 32px 20px;
     color: var(--text-secondary);
     font-size: 13px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid rgba(200,180,210,0.2);
   }
 
   footer a {
@@ -216,9 +214,11 @@
 </head>
 <body>
 
+<img class="page-bg" id="pageBg" src="/hero.png" alt="" onerror="this.style.display='none'">
+
+<div class="page-wrapper">
+
 <div class="hero">
-  <img class="hero-bg" id="heroBg" src="/hero.png" alt="" onerror="this.style.display='none'">
-  <div class="hero-overlay"></div>
   <div class="hero-content">
     <span class="hero-greeting" id="greeting"></span>
     <h1>Mitt Privata</h1>
@@ -245,14 +245,9 @@
       <span class="app-status status-live">Live</span>
     </a>
 
-    <a class="app-card" href="https://yobedoo-tavla.vercel.app" target="_blank">
-      <div class="app-icon" style="background: rgba(212,168,137,0.12); color: var(--peach);">&#127912;</div>
-      <h2>Yobedoo — Mingeltavla</h2>
-      <p>Kreativ mingeltavla för Yobedoo. Visuell planering i stort format.</p>
-      <span class="app-status status-live">Live</span>
-    </a>
-
   </div>
+
+</div>
 
 </div>
 
@@ -261,12 +256,12 @@
 </footer>
 
 <script>
-  // Parallax effect on hero image
-  const heroBg = document.getElementById('heroBg');
-  if (heroBg) {
+  // Parallax effect on background image
+  const pageBg = document.getElementById('pageBg');
+  if (pageBg) {
     window.addEventListener('scroll', () => {
       const scrollY = window.scrollY;
-      heroBg.style.transform = `translateY(${scrollY * 0.4}px)`;
+      pageBg.style.transform = `translateY(${scrollY * 0.3}px) scale(1.1)`;
     }, { passive: true });
   }
 
