@@ -152,13 +152,12 @@
   }
 
   .app-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 2px 14px rgba(45,36,64,0.1);
+    display: block;
   }
 
   .app-card h2 {
@@ -242,21 +241,21 @@
   <div class="apps-grid">
 
     <a class="app-card" href="https://privat-checklista.vercel.app" target="_blank">
-      <div class="app-icon" style="background: rgba(176,138,204,0.12); color: var(--lavender);">&#128141;</div>
+      <img class="app-icon" src="/icons-akvarell/hakan.jpg" alt="">
       <h2>Håkan — Todo</h2>
       <p>Todo-lista och checklistor för allt som rör Håkan. Håll koll och bocka av.</p>
       <span class="app-status status-live">Live</span>
     </a>
 
     <a class="app-card" href="https://adeocare-todo.vercel.app" target="_blank">
-      <div class="app-icon" style="background: rgba(212,136,137,0.12); color: var(--rose);">&#127968;</div>
+      <img class="app-icon" src="/icons-akvarell/adeocare.jpg" alt="">
       <h2>Adeocare — Todo</h2>
       <p>Todo-lista för Adeocare-relaterade uppgifter. Allt samlat och organiserat.</p>
       <span class="app-status status-live">Live</span>
     </a>
 
     <a class="app-card" href="https://sip-meeting.vercel.app" target="_blank">
-      <div class="app-icon" style="background: rgba(137,168,212,0.12); color: var(--sky);">&#128197;</div>
+      <img class="app-icon" src="/icons-akvarell/sip.jpg" alt="">
       <h2>SIP-möte</h2>
       <p>Mötesagenda och underlag för SIP-möten kring Håkan. Samordnad individuell plan.</p>
       <span class="app-status status-live">Live</span>
