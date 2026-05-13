@@ -151,6 +151,28 @@
   .rank-2 { background: var(--silver); }
   .rank-3 { background: var(--bronze); }
 
+  .nki-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 14px;
+    margin-left: 4px;
+  }
+  .nki-badge .label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 400;
+    opacity: 0.85;
+  }
+  .nki-high { background: rgba(94,179,122,0.18); color: #2d6e44; }
+  .nki-mid { background: rgba(212,168,92,0.20); color: #8a5e1f; }
+  .nki-low { background: rgba(212,137,158,0.22); color: #993e58; }
+  .nki-none { background: rgba(184,176,194,0.15); color: var(--text-secondary); font-weight: 400; font-style: italic; }
+
   .head-text {
     flex: 1;
     min-width: 0;
@@ -475,7 +497,7 @@
 </div>
 
 <div class="intro">
-  Research maj 2026 baserat på Stjärnmärkt (Svenskt Demenscentrum), Silviahemcertifiering, Stockholms stads brukarundersökning, IVO och anhörigvittnesmål. <strong>Alla på listan är LOV-anslutna</strong> — de tar biståndsbeslut, så Håkan behåller sin väg in till äldreboende. Klicka på fält för att redigera. Status och pluppar sparas automatiskt.
+  Rangordnad efter <strong>Socialstyrelsens brukarundersökning 2025</strong> — andel positiva svar på "Hur nöjd är du sammantaget med din hemtjänst?". Siffrorna är manuellt verifierade i PDF:erna. Klicka NKI-knappen för att läsa hela undersökningen. <strong>Alla på listan är LOV-anslutna</strong> — Håkan behåller biståndsbeslutet och vägen in till äldreboende. Klicka på fält för att redigera.
 </div>
 
 <div class="legend">
@@ -567,6 +589,12 @@
         <div class="head-text">
           <h2 class="editable" contenteditable="plaintext-only" data-field="namn">${escapeHtml(k.namn)}</h2>
           <div class="meta-row">
+            ${(() => {
+              const nki = k.nki_2025;
+              if (nki == null) return '<span class="nki-badge nki-none">Ingen 2025-data</span>';
+              const cls = nki >= 85 ? 'nki-high' : nki >= 70 ? 'nki-mid' : 'nki-low';
+              return `<span class="nki-badge ${cls}"><span class="label">NKI 2025</span> ${nki}%</span>`;
+            })()}
             <span class="chip chip-typ ${typClass}">${TYP_LABELS[typClass] || typClass}</span>
             <span class="bistand-chip ${k.bistandsbeslut ? 'lov' : 'privat'}" data-field="bistandsbeslut" title="Klicka för att växla mellan biståndsbeslut och helt privat">${k.bistandsbeslut ? 'Biståndsbeslut' : 'Helt privat'}</span>
             ${k.specialisering ? `<span class="chip">${escapeHtml(k.specialisering.split('.')[0])}</span>` : ''}
