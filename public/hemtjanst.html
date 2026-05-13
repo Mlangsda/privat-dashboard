@@ -344,16 +344,28 @@
     opacity: 0.7;
   }
 
-  .kallor {
+  .links-section {
     margin-top: 12px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
     padding-top: 12px;
     border-top: 1px dashed var(--border);
   }
 
-  .kallor a {
+  .links-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .links-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .links-row a, .links-row span.no-link {
     font-size: 11px;
     color: var(--text-secondary);
     background: rgba(176,138,204,0.06);
@@ -362,7 +374,24 @@
     text-decoration: none;
     border: 1px solid var(--border);
   }
-  .kallor a:hover { color: var(--accent); border-color: var(--accent); }
+  .links-row a:hover { color: var(--accent); border-color: var(--accent); }
+  .links-row span.no-link {
+    font-style: italic;
+    opacity: 0.7;
+    background: transparent;
+    border: 1px dashed var(--border);
+  }
+
+  .links-row a.review-bad {
+    background: rgba(212,137,158,0.1);
+    color: #b06078;
+    border-color: rgba(212,137,158,0.3);
+  }
+  .links-row a.review-good {
+    background: rgba(94,179,122,0.1);
+    color: #3d8a56;
+    border-color: rgba(94,179,122,0.3);
+  }
 
   .bistand-chip {
     font-size: 10px;
@@ -606,7 +635,20 @@
         <div class="editable" contenteditable="plaintext-only" data-field="anteckningar" style="white-space: pre-wrap;">${escapeHtml(k.anteckningar) || '<span class="notes-empty">(skriv här efter samtal/möte)</span>'}</div>
       </div>
 
-      ${kallor.length ? `<div class="kallor">${kallor.map(s => `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.label)}</a>`).join('')}</div>` : ''}
+      ${(() => {
+        const reviews = Array.isArray(k.recensioner) ? k.recensioner : [];
+        if (!reviews.length) return '';
+        const renderReview = (r) => {
+          const label = escapeHtml(r.label);
+          const badClass = /1\.0\/5|2\.0\/5|2\.2\/5|sämst|katastrof/i.test(r.label) ? ' review-bad' : '';
+          const goodClass = /94\/100|100\/100|3\.6\/5/i.test(r.label) ? ' review-good' : '';
+          return r.url
+            ? `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="${badClass}${goodClass}">${label}</a>`
+            : `<span class="no-link">${label}</span>`;
+        };
+        return `<div class="links-section"><span class="links-label">Recensioner & betyg</span><div class="links-row">${reviews.map(renderReview).join('')}</div></div>`;
+      })()}
+      ${kallor.length ? `<div class="links-section"><span class="links-label">Övriga källor</span><div class="links-row">${kallor.map(s => `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.label)}</a>`).join('')}</div></div>` : ''}
     `;
 
     // Status select
