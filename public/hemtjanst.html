@@ -364,6 +364,39 @@
   }
   .kallor a:hover { color: var(--accent); border-color: var(--accent); }
 
+  .bistand-chip {
+    font-size: 10px;
+    padding: 3px 9px 3px 22px;
+    border-radius: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease;
+  }
+  .bistand-chip::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .bistand-chip.lov {
+    background: rgba(94,179,122,0.15);
+    color: #3d8a56;
+  }
+  .bistand-chip.lov::before { background: #5eb37a; }
+  .bistand-chip.privat {
+    background: rgba(212,137,158,0.18);
+    color: #b06078;
+  }
+  .bistand-chip.privat::before { background: #d4899e; }
+  .bistand-chip:hover { filter: brightness(0.95); }
+
   .save-toast {
     position: fixed;
     bottom: 24px;
@@ -413,13 +446,14 @@
 </div>
 
 <div class="intro">
-  Research maj 2026 baserat på Stjärnmärkt (Svenskt Demenscentrum), Silviahemcertifiering, Stockholms stads brukarundersökning, IVO och anhörigvittnesmål. Klicka på fält för att redigera. Status och anteckningar sparas automatiskt.
+  Research maj 2026 baserat på Stjärnmärkt (Svenskt Demenscentrum), Silviahemcertifiering, Stockholms stads brukarundersökning, IVO och anhörigvittnesmål. <strong>Alla på listan är LOV-anslutna</strong> — de tar biståndsbeslut, så Håkan behåller sin väg in till äldreboende. Klicka på fält för att redigera. Status och pluppar sparas automatiskt.
 </div>
 
 <div class="legend">
   <span><strong>Stjärnmärkt</strong> = certifierad av Svenskt Demenscentrum (90 % personal utbildad)</span>
   <span><strong>Silviahem</strong> = certifierad av Stiftelsen Silviahemmet</span>
-  <span><strong>LOV</strong> = du väljer fritt</span>
+  <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#5eb37a;margin-right:4px;"></span><strong>Biståndsbeslut</strong> = LOV-ansluten, bygger Håkans case inför äldreboende</span>
+  <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#d4899e;margin-right:4px;"></span><strong>Helt privat</strong> = ingen LOV, kvalar EJ in till äldreboende</span>
 </div>
 
 <div class="container" id="container">
@@ -505,6 +539,7 @@
           <h2 class="editable" contenteditable="plaintext-only" data-field="namn">${escapeHtml(k.namn)}</h2>
           <div class="meta-row">
             <span class="chip chip-typ ${typClass}">${TYP_LABELS[typClass] || typClass}</span>
+            <span class="bistand-chip ${k.bistandsbeslut ? 'lov' : 'privat'}" data-field="bistandsbeslut" title="Klicka för att växla mellan biståndsbeslut och helt privat">${k.bistandsbeslut ? 'Biståndsbeslut' : 'Helt privat'}</span>
             ${k.specialisering ? `<span class="chip">${escapeHtml(k.specialisering.split('.')[0])}</span>` : ''}
             <select class="status-select ${k.status}" data-field="status">
               ${Object.entries(STATUS_LABELS).map(([v,l]) => `<option value="${v}" ${k.status === v ? 'selected' : ''}>${l}</option>`).join('')}
@@ -582,6 +617,16 @@
       await savePatch(k.id, { status: newStatus });
       if (newStatus === 'utesluten') card.style.opacity = '0.6';
       else card.style.opacity = '1';
+    });
+
+    // Biståndsbeslut-toggle
+    const bistandChip = card.querySelector('.bistand-chip');
+    bistandChip.addEventListener('click', async () => {
+      const newVal = !k.bistandsbeslut;
+      k.bistandsbeslut = newVal;
+      bistandChip.className = 'bistand-chip ' + (newVal ? 'lov' : 'privat');
+      bistandChip.textContent = newVal ? 'Biståndsbeslut' : 'Helt privat';
+      await savePatch(k.id, { bistandsbeslut: newVal });
     });
 
     // Editable text fields — save on blur
