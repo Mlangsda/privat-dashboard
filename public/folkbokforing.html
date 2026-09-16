@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Folkbokföring &amp; sambo — Håkan</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Italiana&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --card: #ffffff;
+    --border: rgba(200,180,210,0.3);
+    --text: #2d2440;
+    --text-secondary: #8a7a9e;
+    --accent: #b08acc;
+    --accent-hover: #9a74b8;
+    --rose: #d4899e;
+    --mint: #89b8a8;
+    --sky: #89a8d4;
+    --amber: #d4a25c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #fdfbff;
+    color: var(--text);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .top-bar a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+  }
+
+  .top-bar a:hover { color: var(--accent); }
+
+  .hero {
+    text-align: center;
+    padding: 56px 20px 24px;
+  }
+
+  .hero h1 {
+    font-family: 'Italiana', serif;
+    font-size: 52px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
+
+  .hero p {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+  }
+
+  .intro {
+    max-width: 760px;
+    margin: 0 auto 36px;
+    padding: 0 20px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.7;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+
+  /* Kort med fråga + svar */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 26px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(45,36,64,0.05);
+    transition: box-shadow 0.2s ease;
+  }
+
+  .card:hover { box-shadow: 0 6px 22px rgba(45,36,64,0.08); }
+
+  .q-label {
+    display: inline-block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    background: rgba(176,138,204,0.12);
+    padding: 3px 10px;
+    border-radius: 14px;
+    margin-bottom: 12px;
+  }
+
+  .question {
+    font-family: 'Italiana', serif;
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1.25;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .question-quote {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-style: italic;
+    line-height: 1.6;
+    margin-bottom: 18px;
+    padding-left: 14px;
+    border-left: 2px solid rgba(176,138,204,0.4);
+  }
+
+  .kort-svar {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    background: rgba(176,138,204,0.08);
+    border-radius: 10px;
+  }
+
+  .kort-svar strong { color: var(--accent-hover); }
+
+  .card h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin: 20px 0 8px;
+  }
+
+  .card p {
+    font-size: 15px;
+    line-height: 1.65;
+    margin-bottom: 10px;
+  }
+
+  .card ul {
+    list-style: none;
+    margin: 4px 0 12px;
+  }
+
+  .card li {
+    font-size: 15px;
+    line-height: 1.6;
+    padding-left: 18px;
+    position: relative;
+    margin-bottom: 8px;
+  }
+
+  .card li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.7;
+  }
+
+  .card li.rose::before { background: var(--rose); }
+  .card li.mint::before { background: var(--mint); }
+  .card li.sky::before { background: var(--sky); }
+
+  .card li strong { color: var(--text); }
+
+  .note {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    padding: 10px 14px;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    margin-top: 12px;
+  }
+
+  .note.warn {
+    border-color: rgba(212,162,92,0.5);
+    background: rgba(255,250,230,0.5);
+    color: #8a5e1f;
+  }
+
+  .note.warn strong { color: #8a5e1f; }
+
+  .status-chip {
+    display: inline-block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 9px;
+    border-radius: 12px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  .chip-ok { background: rgba(94,179,122,0.15); color: #2d6e44; }
+  .chip-gray { background: rgba(184,176,194,0.18); color: var(--text-secondary); }
+  .chip-warn { background: rgba(212,162,92,0.2); color: #8a5e1f; }
+
+  /* Sammanfattning */
+  .summary {
+    background: linear-gradient(180deg, rgba(137,184,168,0.14) 0%, rgba(137,184,168,0.05) 100%);
+    border: 1px solid rgba(137,184,168,0.4);
+  }
+
+  /* Kollat mot lagtexten */
+  .verified {
+    background: linear-gradient(180deg, rgba(137,168,212,0.12) 0%, rgba(137,168,212,0.04) 100%);
+    border: 1px solid rgba(137,168,212,0.4);
+  }
+
+  .verified .q-label {
+    color: #4a6db3;
+    background: rgba(137,168,212,0.18);
+  }
+
+  .verified li::before { background: var(--sky); }
+
+  .verified .law {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #4a6db3;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  details.section {
+    margin-top: 14px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+
+  details.section summary {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px 0;
+    list-style: none;
+  }
+
+  details.section summary::-webkit-details-marker { display: none; }
+  details.section summary::before {
+    content: '▸ ';
+    display: inline-block;
+    transition: transform 0.15s ease;
+  }
+  details.section[open] summary::before { transform: rotate(90deg); }
+
+  details.section .body { padding: 10px 0 4px; }
+
+  /* Källor */
+  .sources {
+    margin-top: 8px;
+  }
+
+  .sources-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .sources-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .sources-row a {
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: rgba(176,138,204,0.06);
+    padding: 4px 10px;
+    border-radius: 12px;
+    text-decoration: none;
+    border: 1px solid var(--border);
+  }
+
+  .sources-row a:hover { color: var(--accent); border-color: var(--accent); }
+
+  footer {
+    text-align: center;
+    padding: 24px 20px 40px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 700px) {
+    .hero h1 { font-size: 40px; }
+    .question { font-size: 22px; }
+    .card { padding: 20px 18px; }
+    .container { padding: 0 16px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="/">‹ Mitt Privata</a>
+  <a href="https://mlc-workspace.vercel.app">MLC Workspace ›</a>
+</div>
+
+<div class="hero">
+  <h1>Folkbokföring &amp; sambo</h1>
+  <p>Håkan · Danvikshem · Torsplan 10</p>
+</div>
+
+<div class="intro">
+  Vad som gäller när Håkan bor på Danvikshem i Nacka i veckorna och hemma i Vasastan på helgerna:
+  folkbokföringen, bostadsrätten, samboförhållandet och framtidsfullmakten.
+  Underlaget är frågor och svar från Googles AI-läge (16 september 2026) — längst ner finns de punkter som är kollade mot lagtexten.
+</div>
+
+<div class="container">
+
+  <!-- FRÅGA 1 -->
+  <div class="card">
+    <span class="q-label">Fråga 1</span>
+    <div class="question">Flytt till Danvikshem — kan man ha kvar bostadsrätten och vara skriven i Stockholm?</div>
+    <div class="question-quote">Om en person flyttar till Danvikshem i Nacka (demensboende), hur fungerar det med folkbokföringen? Kan hen ha kvar sin bostadsrätt i Stockholm och vara fortsatt skriven på adressen i Stockholm?</div>
+
+    <div class="kort-svar">Ja, personen kan ha kvar sin bostadsrätt i Stockholm — men som <strong>huvudregel</strong> kan hen inte vara fortsatt skriven på adressen i Stockholm. Det finns två viktiga undantag.</div>
+
+    <h3>Folkbokföringen — huvudregel</h3>
+    <p>Enligt folkbokföringslagen ska en person vara folkbokförd där hen har sin huvudsakliga dygnsvila, vilket innebär att hen ska skrivas på äldreboendet. Eftersom Danvikshem ligger i Nacka kommun innebär det normalt att folkbokföringen flyttas från Stockholm till Nacka.</p>
+
+    <h3>Undantag — då kan man förbli skriven på sin gamla adress</h3>
+    <ul>
+      <li class="mint"><strong>Biståndsbeslut från Stockholm.</strong> Om personen bor i Stockholms stad och Stockholms stad beviljar och betalar platsen på Danvikshem i Nacka (ett placeringsbeslut i en annan kommun) träder en specialregel in: personen ska då <strong>inte</strong> ändra sin folkbokföring utan förblir skriven på sin adress i Stockholm.</li>
+      <li class="mint"><strong>Make, maka eller sambo bor kvar.</strong> Om partnern bor kvar i bostadsrätten i Stockholm kan personen i vissa fall ha kvar sin folkbokföring där enligt reglerna om dubbel bosättning.</li>
+    </ul>
+    <p>Om personen får platsen via Nacka kommuns egna köer, eller genom eget val utan ett externt kommunalt placeringsbeslut, ska hen folkbokföra sig på boendet i Nacka.</p>
+
+    <h3>Äga kvar bostadsrätten</h3>
+    <p>Det finns inga juridiska hinder mot att äga kvar bostadsrätten i Stockholm, även om man blir folkbokförd på boendet i Nacka. Personen (eller en god man / anhörig med fullmakt) kan välja att låta bostaden stå tom, eller hyra ut den i andra hand. Andrahandsuthyrning kräver tillstånd från bostadsrättsföreningens styrelse, men flytt till ett vårdboende är ett giltigt skäl som föreningen i princip alltid måste godkänna.</p>
+  </div>
+
+  <!-- FRÅGA 2 -->
+  <div class="card">
+    <span class="q-label">Fråga 2</span>
+    <div class="question">Kan vi bli sambor "på pappret" i Vasastan? <span class="status-chip chip-gray">Överspelad av fråga 3</span></div>
+    <div class="question-quote">Vi var sambor på Östermalm innan Håkan flyttade till Vasastan, där tanken var att vi båda skulle bo. Men demensen gjorde att det inte gick att bo tillsammans. Nu när han flyttat till Danvikshem vill jag flytta till Vasastan så att vi på pappret blir sambor igen.</div>
+
+    <div class="note">Det här svaret byggde på att Håkan <em>inte</em> skulle bo i Vasastan alls — bara vara skriven där. Det stämmer inte med hur ni faktiskt lever (se fråga 3), så huvudslutsatsen gäller inte. Det som fortfarande är användbart är verktygen för att företräda Håkan.</div>
+
+    <details class="section">
+      <summary>Visa svaret ändå</summary>
+      <div class="body">
+        <h3>Folkbokföringen godkänner inte "sambor på pappret"</h3>
+        <p>Folkbokföringen bygger helt på var man faktiskt har sin dygnsvila. Om Håkan skrivs i Vasastan trots att han bara bor på Danvikshem blir det en felaktig folkbokföring — Skatteverket kan ändra adressen retroaktivt, och i värsta fall räknas det som folkbokföringsbrott.</p>
+        <h3>Samboförhållandet enligt sambolagen</h3>
+        <p>Enligt sambolagen (2003:376) upphör ett samboförhållande om samborna flyttar isär. När en person flyttar permanent till ett demensboende, utan att paret delar hushåll längre, anses förhållandet i lagens mening ha upphört — att stå skrivna på samma adress ändrar inte det.</p>
+      </div>
+    </details>
+
+    <h3>Verktyg för att företräda Håkan — gäller oavsett</h3>
+    <ul>
+      <li><strong>Anhörigbehörighet.</strong> Som nära anhörig har du rätt att betala räkningar och sköta vardagliga ekonomiska saker som rör hans boende på Danvikshem.</li>
+      <li><strong>Framtidsfullmakt.</strong> Finns den skriven innan han blev för sjuk kan den aktiveras när det behövs, och ger full rätt att företräda honom i det fullmakten omfattar.</li>
+      <li><strong>God man.</strong> Om det inte finns en framtidsfullmakt, och han inte längre kan uttrycka sin vilja, ansöker man hos överförmyndaren om god man.</li>
+    </ul>
+  </div>
+
+  <!-- FRÅGA 3 -->
+  <div class="card">
+    <span class="q-label">Fråga 3</span>
+    <div class="question">Jag flyttar fysiskt till Vasastan, Håkan bor där på helgerna och är skriven där <span class="status-chip chip-ok">Så här är det</span></div>
+    <div class="question-quote">Jo men jag flyttar ju till Vasastan fysiskt, och Håkan bor där på helgerna och är skriven i Vasastan.</div>
+
+    <div class="kort-svar">Då förändras saken. Med dubbel bosättning — Danvikshem i veckorna, Vasastan på helgerna — ska Håkan vara folkbokförd där han har sin <strong>starkaste koppling</strong>, och den bostad där man bor tillsammans med sin sambo väger tungt. Att han är skriven i Vasastan är alltså rätt.</div>
+
+    <h3>1. Folkbokföringen är korrekt</h3>
+    <p>Skatteverket godkänner detta. En person med dubbel bosättning anses ha sin starkaste koppling till den bostad där hen bor tillsammans med sin sambo, även om dygnsvilan under vardagarna sker på ett äldreboende. Eftersom du flyttar in i Vasastan på heltid och ni delar helgerna där, gör ni rätt som har honom folkbokförd i Vasastan.</p>
+
+    <h3>2. Är ni sambor juridiskt? <span class="status-chip chip-warn">Gråzon</span></h3>
+    <ul>
+      <li><strong>Huvudregeln.</strong> För att vara sambor krävs att man lever tillsammans i ett gemensamt hushåll i ett parförhållande. När en partner flyttar till ett boende på grund av demens anses det gemensamma hushållet oftast ha upphört.</li>
+      <li class="mint"><strong>Undantaget — er situation.</strong> Eftersom Håkan faktiskt bor hos dig i Vasastan varje helg har ni inte brutit sammanlevnaden helt. Ni delar fortfarande ett praktiskt hushåll och ett gemensamt liv under en betydande del av veckan. Det kan i vissa fall ses som att samboförhållandet fortfarande pågår.</li>
+    </ul>
+
+    <h3>3. Praktiskt just nu</h3>
+    <ul>
+      <li><strong>Låt folkbokföringen vara.</strong> Ni har lagligt stöd för att han är skriven i Vasastan tillsammans med dig.</li>
+      <li><strong>Bostadsrättsföreningen.</strong> Det är fritt fram att flytta in. Håkan äger (eller är medägare i) lägenheten och använder den på helgerna, så inget andrahandstillstånd behövs för dig.</li>
+      <li><strong>Säkra juridiken ändå.</strong> Även som sambo har man inte automatiskt rätt att sköta den andres bankkonton, teckna avtal eller sälja en bostad om sjukdomen förvärras — därför framtidsfullmakten.</li>
+    </ul>
+  </div>
+
+  <!-- FRAMTIDSFULLMAKT -->
+  <div class="card">
+    <span class="q-label">Framtidsfullmakten</span>
+    <div class="question">Redo i lådan — så fungerar det när det blir dags</div>
+    <div class="question-quote">Vi har framtidsfullmakt redo när det är dags att aktivera den.</div>
+
+    <h3>Hur aktiveras den?</h3>
+    <p>Det är oftast du som fullmaktshavare som bedömer när Håkans hälsotillstånd gör att han inte längre kan fatta egna beslut.</p>
+    <ul>
+      <li class="sky"><strong>Direkt aktivering.</strong> Om fullmakten inte kräver domstolsprövning kan du börja använda den när Håkan förlorat sin beslutsförmåga. Du visar upp originalfullmakten och ett läkarintyg när du utför ärenden för hans räkning.</li>
+      <li class="sky"><strong>Tingsrätten — valfritt men säkrast.</strong> Om det står i fullmakten att den ska prövas av domstol, eller om banker/myndigheter kräver det, ansöker du hos tingsrätten om att den har trätt i kraft och bifogar läkarintyg.</li>
+    </ul>
+
+    <h3>Vad kan du göra med fullmakten? (förutsatt att fullmaktens text täcker det)</h3>
+    <ul>
+      <li><strong>Ekonomin för Vasastan.</strong> Betala månadsavgiften till föreningen, teckna elavtal och hantera försäkringar i Håkans namn.</li>
+      <li><strong>Avgiften till Danvikshem.</strong> Sköta kontakten med kommunen och se till att vård- och omsorgsavgifterna betalas från hans konton.</li>
+      <li><strong>Sälja eller hyra ut bostaden.</strong> Om ni i framtiden vill sälja lägenheten ger fullmakten dig rätt att skriva under köpekontraktet för Håkans räkning — så länge fullmakten uttryckligen tillåter försäljning av fastighet/bostadsrätt.</li>
+    </ul>
+
+    <div class="note">Håll hårt i originalet av framtidsfullmakten, och se till att ha ett uppdaterat läkarintyg den dagen du behöver visa upp den för banken eller myndigheter.</div>
+  </div>
+
+  <!-- SAMMANFATTNING -->
+  <div class="card summary">
+    <span class="q-label">Sammanfattning</span>
+    <div class="question">Läget</div>
+    <p>Du kan flytta till Vasastan med gott samvete. Håkan kan bo där på helgerna och vara skriven där, och framtidsfullmakten ligger redo för den dag hans sjukdom gör att du behöver ta över det formella ansvaret helt.</p>
+    <p style="font-size:13px;color:var(--text-secondary);margin-top:6px;">Grundhållningen (samma som i flyttplanen): framtidsfullmakten aktiveras inte så länge Håkan har kvar sitt omdöme och skriver under själv.</p>
+  </div>
+
+  <!-- KOLLAT MOT LAGTEXTEN -->
+  <div class="card verified">
+    <span class="q-label">Kollat mot lagtexten</span>
+    <div class="question">Det här stämmer — och det här är osäkert</div>
+    <p style="font-size:14px;color:var(--text-secondary);">Google-svaret ovan är AI-genererat och kan innehålla fel. De här punkterna är avstämda mot lagtexten den 16 september 2026.</p>
+
+    <ul>
+      <li>
+        <span class="law">Folkbokföringslagen 7 §</span>
+        <strong>Helgerna räcker för dubbel bosättning.</strong> Man anses regelmässigt tillbringa sin dygnsvila på en bostad där man sover <em>minst en gång i veckan</em>. Den som därmed bor på fler än en fastighet folkbokförs där hen "med hänsyn till samtliga omständigheter" har sin egentliga hemvist. Skatteverket väger bland annat om man bor tillsammans med sin familj (make, maka, sambo eller barn) i någon av bostäderna, var man arbetar, bostädernas storlek och hur mycket tid man tillbringar på varje ställe.
+      </li>
+      <li>
+        <span class="law">Folkbokföringslagen 15 §</span>
+        <strong>Beviljade Stockholms stad platsen? Då ska folkbokföringen inte ändras alls.</strong> En vistelse i särskilt boende för äldre i en annan kommun "ska inte anses leda till ändrad bosättning om vistelsen har beslutats av den kommun där han eller hon var eller borde ha varit folkbokförd". Det gäller så länge Håkan fortfarande äger eller hyr bostaden i Stockholm. Danvikshem kräver biståndsbeslut från hemkommunen, och det är respektive kommun som håller i kön och fördelar platserna — kom platsen via Norra innerstadens beslut är det denna regel som gäller, helt oberoende av helgerna.
+      </li>
+      <li>
+        <span class="law">Sambolagen 2 §</span>
+        <strong>Gråzon — lagtexten säger bara "flyttar isär".</strong> Ett samboförhållande upphör när samborna eller någon av dem gifter sig, när samborna flyttar isär eller när någon av dem avlider. Lagen har inget uttryckligt undantag för sjukdom eller vårdboende. Juristsvar som hänvisar till förarbetena (prop. 2002/03:80 s. 45–46) menar att parternas avsikt avgör och att en vistelse på sjukhus eller vårdinrättning normalt inte bryter förhållandet; andra jurister bedömer att en flytt till äldreboende innebär att det upphör. Får frågan betydelse (bodelning, arv, samboavtal) — stäm av med en jurist.
+      </li>
+      <li>
+        <span class="law">Lag (2017:310) om framtidsfullmakter 1, 2, 9–11 §§</span>
+        <strong>Stämmer.</strong> Fullmakten träder i kraft när fullmaktsgivaren på grund av sjukdom eller liknande "varaktigt och i huvudsak" inte längre kan ha hand om det fullmakten avser. Det är fullmaktshavaren som bedömer detta — om inte fullmakten säger att tingsrätten ska pröva ikraftträdandet, och fullmaktshavaren kan alltid själv begära en sådan prövning. När den trätt i kraft ska fullmaktshavaren snarast underrätta fullmaktsgivaren och dennes närmaste. Fullmakten kan omfatta ekonomiska och personliga angelägenheter, men inte hälso- och sjukvård eller tandvård.
+      </li>
+    </ul>
+
+    <div class="sources">
+      <span class="sources-label">Källor</span>
+      <div class="sources-row">
+        <a href="https://www4.skatteverket.se/rattsligvagledning/edition/2023.14/330539.html" target="_blank">Skatteverket — Boende för äldre (rättslig vägledning)</a>
+        <a href="https://skatteverket.se/servicelankar/teckensprak/folkbokforing/dubbelbosattning.4.15532c7b1442f256bae12ab4.html" target="_blank">Skatteverket — Dubbel bosättning</a>
+        <a href="https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/folkbokforingslag-1991481_sfs-1991-481/" target="_blank">Folkbokföringslag (1991:481)</a>
+        <a href="https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/sambolag-2003376_sfs-2003-376/" target="_blank">Sambolag (2003:376)</a>
+        <a href="https://www.riksdagen.se/sv/dokument-och-lagar/dokument/proposition/ny-sambolag_gq0380/html/" target="_blank">Prop. 2002/03:80 Ny sambolag</a>
+        <a href="https://lagen.nu/2017:310" target="_blank">Lag (2017:310) om framtidsfullmakter</a>
+        <a href="https://www.danvikshem.se/bo-hos-oss/hur-far-jag-en-plats/" target="_blank">Danvikshem — Hur får jag en plats?</a>
+        <a href="https://lawline.se/answers/maste-bodelning-genomforas-om-en-sambo-flyttar-till-aldreboende" target="_blank">Lawline — sambo som flyttar till äldreboende</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>Underlag från Googles AI-läge 16 sep 2026 · AI-svar kan innehålla fel · Inget här är juridisk rådgivning</footer>
+
+</body>
+</html>
