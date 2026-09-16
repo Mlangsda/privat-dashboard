@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tidsbudget - flytt Torsplan 10</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Italiana&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --card: #ffffff;
+    --border: rgba(200,180,210,0.32);
+    --text: #2d2440;
+    --text-secondary: #8a7a9e;
+    --accent: #b08acc;
+    --accent-hover: #9a74b8;
+    --lavender: #b08acc;
+    --rose: #d4899e;
+    --peach: #d4a889;
+    --mint: #89b8a8;
+    --sky: #89a8d4;
+    --green: #6fae84;
+    --grey: #b9b0c6;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'SF Pro Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:#fdfcfe; color:var(--text); line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding-bottom:60px;
+  }
+
+  .top-bar {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 22px; font-size:13px; border-bottom:1px solid var(--border); background:#fff;
+    position:sticky; top:0; z-index:20;
+  }
+  .top-bar a { color:var(--accent); text-decoration:none; font-weight:500; }
+  .top-bar a:hover { text-decoration:underline; }
+
+  .hero { text-align:center; padding:48px 20px 22px; }
+  .hero h1 { font-family:'Italiana',serif; font-size:52px; font-weight:400; letter-spacing:1px; line-height:1.05; }
+  .hero p { color:var(--text-secondary); font-size:15px; margin-top:8px; }
+
+  .container { max-width:900px; margin:0 auto; padding:0 18px; }
+
+  .intro {
+    background:#fff; border:1px solid var(--border); border-radius:16px;
+    padding:18px 20px; font-size:14px; color:#5a4f6b; margin-bottom:26px;
+  }
+  .intro strong { color:var(--text); }
+
+  .section { margin-bottom:36px; }
+  .section-header { display:flex; align-items:center; gap:11px; margin-bottom:12px; }
+  .section-dot { width:11px; height:11px; border-radius:50%; flex:0 0 auto; }
+  .section-title { font-size:17px; font-weight:600; letter-spacing:.2px; }
+  .section-meta { font-size:12px; color:var(--text-secondary); margin-left:auto; }
+
+  .panel { background:#fff; border:1px solid var(--border); border-radius:16px; padding:18px 20px; }
+
+  /* KUNDTIMMAR */
+  .client-row { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .client-label { font-size:14.5px; font-weight:600; }
+  .client-label small { display:block; font-size:12.5px; font-weight:400; color:var(--text-secondary); }
+  .stepper { display:flex; align-items:center; gap:6px; margin-left:auto; }
+  .stepper button {
+    width:34px; height:34px; border-radius:10px; border:1px solid var(--border); background:#fff;
+    font-size:18px; color:var(--accent); cursor:pointer; font-family:inherit; line-height:1;
+  }
+  .stepper button:hover { border-color:var(--accent); background:rgba(176,138,204,0.06); }
+  .stepper input {
+    width:64px; height:34px; text-align:center; font-family:inherit; font-size:16px; font-weight:600;
+    border:1px solid var(--border); border-radius:10px; color:var(--text);
+  }
+  .stepper input:focus { outline:none; border-color:var(--accent); }
+  .stepper span { font-size:13px; color:var(--text-secondary); }
+
+  .totals { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+  .pill { font-size:12.5px; padding:5px 12px; border-radius:20px; background:rgba(176,138,204,0.1); color:#6d5a85; }
+  .pill strong { color:var(--text); }
+  .pill.ok { background:rgba(111,174,132,0.13); color:#3d7a52; }
+  .pill.bad { background:rgba(212,137,158,0.15); color:#a8546b; }
+
+  .warn-box {
+    margin-top:14px; padding:11px 14px; border-radius:12px; font-size:13px;
+    background:linear-gradient(180deg,#fffbfa,#fef6f4); border:1px solid rgba(212,137,158,0.4); color:#a8546b;
+  }
+
+  /* OMRÅDESTABELL */
+  .area-table { width:100%; border-collapse:collapse; margin-top:18px; font-size:13.5px; }
+  .area-table th {
+    text-align:right; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px;
+    color:var(--text-secondary); padding:0 8px 8px; border-bottom:1px solid var(--border);
+  }
+  .area-table th:first-child { text-align:left; padding-left:0; }
+  .area-table td { padding:9px 8px; border-bottom:1px solid rgba(200,180,210,0.18); text-align:right; white-space:nowrap; }
+  .area-table td:first-child { text-align:left; padding-left:0; white-space:normal; }
+  .area-table tr:last-child td { border-bottom:none; }
+  .area-name { display:flex; align-items:center; gap:9px; }
+  .dot { width:9px; height:9px; border-radius:50%; flex:0 0 auto; }
+  .area-name .name { cursor:pointer; }
+  .area-name .name:hover { color:var(--accent); }
+  .num-muted { color:var(--text-secondary); }
+  .num-strong { font-weight:600; }
+  .chip {
+    font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:.4px;
+    padding:2px 8px; border-radius:20px; cursor:pointer; border:none; font-family:inherit;
+    background:rgba(200,180,210,0.18); color:var(--text-secondary);
+  }
+  .chip.fixed { background:rgba(212,168,137,0.18); color:#a3764f; }
+  .chip.client { background:rgba(111,174,132,0.14); color:#3d7a52; cursor:default; }
+  .status { font-size:12.5px; font-weight:600; }
+  .status.ok { color:#3d7a52; }
+  .status.cut { color:#b4667e; }
+  .status.add { color:#8a6aa8; }
+  .area-del { background:none; border:none; cursor:pointer; padding:2px; line-height:0; opacity:.6; }
+  .area-del:hover { opacity:1; }
+  .area-del svg { width:13px; height:13px; }
+  .name-input {
+    font-family:inherit; font-size:13.5px; border:1px solid var(--accent); border-radius:8px; padding:4px 8px; width:100%; max-width:260px;
+  }
+  .name-input:focus { outline:none; }
+
+  /* DAGAR */
+  .days { display:flex; flex-direction:column; gap:14px; }
+  .day { background:#fff; border:1px solid var(--border); border-radius:16px; padding:14px 16px 12px; }
+  .day-head { display:flex; align-items:baseline; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+  .day-name { font-family:'Italiana',serif; font-size:26px; line-height:1.1; }
+  .day-title { font-size:13.5px; color:var(--text-secondary); cursor:pointer; }
+  .day-title:hover { color:var(--accent); }
+  .day-sum { margin-left:auto; font-size:12.5px; font-weight:600; color:var(--accent); }
+  .day-sum.over { color:#b4667e; }
+
+  .passes { display:flex; flex-direction:column; gap:6px; min-height:12px; border-radius:10px; }
+  .passes.drag-over-empty { background:rgba(176,138,204,0.07); outline:2px dashed rgba(176,138,204,0.4); outline-offset:3px; }
+
+  .pass {
+    display:flex; align-items:center; gap:10px; padding:9px 11px; border-radius:11px;
+    border:1px solid rgba(200,180,210,0.24); background:#fdfcfe; transition:box-shadow .18s, opacity .2s, border-color .18s;
+  }
+  .pass:hover { box-shadow:0 3px 12px rgba(150,120,180,0.08); }
+  .pass.dragging { opacity:.4; }
+  .pass.drag-over { border-color:var(--accent); box-shadow:0 -2px 0 var(--accent) inset; }
+  .pass.editing { flex-wrap:wrap; border-color:var(--accent); background:#fff; }
+  .pass-bar { width:4px; align-self:stretch; border-radius:4px; flex:0 0 auto; }
+  .pass-time { font-size:13px; font-variant-numeric:tabular-nums; color:var(--text-secondary); width:98px; flex:0 0 auto; }
+  .pass-main { flex:1; min-width:0; }
+  .pass-area { font-size:14px; font-weight:600; }
+  .pass-note { font-size:12.5px; color:#6d6280; }
+  .pass-hours { font-size:13.5px; font-weight:600; flex:0 0 auto; }
+  .pass-actions { display:flex; align-items:center; gap:9px; flex:0 0 auto; opacity:0; transition:opacity .15s; }
+  .pass:hover .pass-actions { opacity:1; }
+  .edit-hint { font-size:11.5px; color:var(--text-secondary); cursor:pointer; }
+  .edit-hint:hover { color:var(--accent); }
+  .x-btn { background:none; border:none; cursor:pointer; padding:2px; line-height:0; }
+  .x-btn svg { width:15px; height:15px; }
+
+  .drag-handle { display:flex; flex-direction:column; gap:2.5px; padding:5px 2px; cursor:grab; flex:0 0 auto; opacity:.35; }
+  .drag-handle:active { cursor:grabbing; }
+  .pass:hover .drag-handle { opacity:.7; }
+  .drag-handle span { display:block; width:11px; height:1.6px; background:#a596b8; border-radius:2px; }
+
+  .lunch { display:flex; align-items:center; gap:10px; padding:3px 11px 3px 46px; font-size:12.5px; color:var(--text-secondary); }
+  .lunch .pass-time { width:98px; }
+
+  .edit-grid { display:flex; gap:8px; flex-wrap:wrap; width:100%; align-items:center; }
+  .edit-grid select, .edit-grid input {
+    font-family:inherit; font-size:13.5px; border:1px solid var(--border); border-radius:9px;
+    padding:7px 9px; color:var(--text); background:#fff;
+  }
+  .edit-grid select:focus, .edit-grid input:focus { outline:none; border-color:var(--accent); }
+  .edit-grid .in-hours { width:78px; }
+  .edit-grid .in-note { flex:1; min-width:160px; }
+  .edit-grid label { font-size:12px; color:var(--text-secondary); }
+  .edit-actions { display:flex; gap:7px; width:100%; margin-top:2px; }
+  .edit-actions button, .btn {
+    font-family:inherit; font-size:12.5px; font-weight:600; padding:7px 14px; border-radius:9px; border:none; cursor:pointer;
+  }
+  .btn-save { background:var(--accent); color:#fff; }
+  .btn-save:hover { background:var(--accent-hover); }
+  .btn-cancel { background:rgba(200,180,210,0.2); color:var(--text-secondary); }
+  .btn-delete { background:rgba(212,137,158,0.14); color:#b4667e; margin-left:auto; }
+
+  .add-btn {
+    width:100%; margin-top:8px; padding:8px; background:none; cursor:pointer;
+    border:1.4px dashed rgba(200,180,210,0.55); border-radius:11px;
+    color:var(--text-secondary); font-family:inherit; font-size:12.5px; transition:all .15s;
+  }
+  .add-btn:hover { border-color:var(--accent); color:var(--accent); background:rgba(176,138,204,0.04); }
+
+  .plan-tools { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; align-items:center; }
+  .btn-ghost { background:#fff; border:1px solid var(--border); color:var(--text-secondary); }
+  .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+  .confirm { font-size:12.5px; color:var(--text); display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+
+  /* FLYTTEN */
+  .meter-top { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px; }
+  .meter-label { font-size:14.5px; font-weight:600; }
+  .meter-count { font-size:13px; font-weight:600; color:#a3764f; }
+  .meter-count.over { color:#b4667e; }
+  .meter-track { height:9px; background:rgba(212,168,137,0.18); border-radius:20px; overflow:hidden; }
+  .meter-fill { height:100%; background:linear-gradient(90deg,var(--peach),var(--rose)); border-radius:20px; width:0%; transition:width .45s ease; }
+  .log-form { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+  .log-form input {
+    font-family:inherit; font-size:13.5px; border:1px solid var(--border); border-radius:9px; padding:7px 9px; color:var(--text);
+  }
+  .log-form input:focus { outline:none; border-color:var(--accent); }
+  .log-form .in-date { width:150px; }
+  .log-form .in-hours { width:78px; }
+  .log-form .in-note { flex:1; min-width:160px; }
+  .log-list { margin-top:12px; display:flex; flex-direction:column; }
+  .log-item { display:flex; gap:12px; align-items:center; padding:8px 0; border-top:1px solid rgba(200,180,210,0.18); font-size:13.5px; }
+  .log-date { color:var(--text-secondary); width:96px; flex:0 0 auto; font-variant-numeric:tabular-nums; }
+  .log-note { flex:1; min-width:0; }
+  .log-hours { font-weight:600; flex:0 0 auto; }
+  .log-empty { font-size:13px; color:var(--text-secondary); margin-top:12px; }
+
+  /* INSTÄLLNINGAR */
+  .settings { display:flex; gap:18px; flex-wrap:wrap; font-size:13px; color:var(--text-secondary); }
+  .settings label { display:flex; align-items:center; gap:8px; }
+  .settings input {
+    font-family:inherit; font-size:13.5px; border:1px solid var(--border); border-radius:9px; padding:6px 8px; color:var(--text); width:84px;
+  }
+  .settings input:focus { outline:none; border-color:var(--accent); }
+
+  .loading { text-align:center; padding:50px 0; color:var(--text-secondary); font-size:14px; }
+  footer { text-align:center; padding:34px 20px 10px; color:var(--text-secondary); font-size:12px; }
+  footer.error { color:#b4667e; font-weight:600; }
+
+  @media (max-width:700px) {
+    .hero h1 { font-size:38px; }
+    .hero { padding:32px 16px 18px; }
+    .container { padding:0 16px; }
+    .pass-actions { opacity:1; }
+    .pass { flex-wrap:wrap; row-gap:2px; }
+    .pass-time { width:auto; order:1; }
+    .pass-hours { order:2; margin-left:auto; }
+    .pass-actions { order:3; }
+    .pass-main { order:4; flex-basis:100%; padding-left:25px; }
+    .pass-bar { display:none; }
+    .lunch { padding-left:11px; }
+    .lunch .pass-time { order:0; }
+    .area-table .col-base, .area-table .col-days { display:none; }
+    .area-table { font-size:13px; }
+    .panel { padding:16px 14px; }
+    .chip { padding:2px 6px; letter-spacing:.2px; }
+    .area-table td:last-child, .area-table th:last-child { padding-right:0; }
+    .area-table th { white-space:nowrap; }
+    .area-table td, .area-table th { padding-left:5px; padding-right:5px; }
+    .stepper { margin-left:0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="/">‹ Mitt Privata</a>
+  <a href="https://mlc-workspace.vercel.app">MLC Workspace ›</a>
+</div>
+
+<div class="hero">
+  <h1>Tidsbudget</h1>
+  <p>Flytt Torsplan 10 · veckan i hela pass</p>
+</div>
+
+<div class="container">
+
+  <div class="intro">
+    Kommer det in ett uppdrag skriver du <strong>kundtimmarna</strong> här nedan. Då räknas budgeten om direkt, och tabellen visar vad som ska strykas i dagarna.
+    Flytten ligger fast på sina timmar. <strong>Hemsidan har ett tak på 2 timmar i veckan.</strong>
+  </div>
+
+  <div id="root"><div class="loading">Hämtar tidsbudgeten…</div></div>
+
+</div>
+
+<footer id="footer">Sparas säkert i molnet (Supabase)</footer>
+
+<script>
+  const SB_URL = 'https://dxixbtxywsvshthtiwgo.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR4aXhidHh5d3N2c2h0aHRpd2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NjE1MzgsImV4cCI6MjA4ODIzNzUzOH0.87q-gad0BtcRcYHKpsKNqoJ8wTo-8jLPUizGomLboB4';
+
+  const DAY_NAMES = { 1:'Måndag', 2:'Tisdag', 3:'Onsdag', 4:'Torsdag', 5:'Fredag' };
+  const COLORS = ['var(--sky)','var(--lavender)','var(--rose)','var(--peach)','var(--mint)','var(--green)','var(--grey)'];
+  const LUNCH_AFTER = 11 * 60 + 30; // lunch efter första passet som slutar 11:30 eller senare
+
+  const X_SVG = '<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="4.5" y1="4.5" x2="11.5" y2="11.5" stroke="#c4b8d4" stroke-width="1.3" stroke-linecap="round"/><line x1="11.5" y1="4.5" x2="4.5" y2="11.5" stroke="#c4b8d4" stroke-width="1.3" stroke-linecap="round"/></svg>';
+  const DRAG_SVG = '<span></span><span></span><span></span>';
+
+  // --- Supabase ---
+  let saveErrors = 0;
+  async function sbFetch(path, opts = {}) {
+    try {
+      const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
+        ...opts,
+        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: opts.prefer || 'return=representation', ...opts.headers }
+      });
+      if (!res.ok) { console.error('Supabase error', res.status, await res.text()); showError(); return null; }
+      const text = await res.text();
+      return text ? JSON.parse(text) : [];
+    } catch (err) {
+      console.error('Supabase error', err); showError(); return null;
+    }
+  }
+  function showError() {
+    saveErrors++;
+    const f = document.getElementById('footer');
+    f.className = 'error';
+    f.textContent = 'Något kunde inte sparas. Ladda om sidan och försök igen.';
+  }
+  const patch = (table, filter, data) => sbFetch(`${table}?${filter}`, { method:'PATCH', body: JSON.stringify({ ...data, updated_at: new Date().toISOString() }) });
+
+  // --- State ---
+  let settings = null, areas = [], days = [], passes = [], logg = [];
+
+  const escapeHtml = s => { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; };
+  const escapeAttr = s => (s == null ? '' : String(s)).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;');
+  const num = v => { const n = parseFloat(String(v == null ? '' : v).replace(',', '.')); return isNaN(n) ? 0 : n; };
+  const fmtNum = n => String(Math.round(n * 100) / 100).replace('.', ',');
+  const fmtH = n => fmtNum(n) + (n === 1 ? ' timme' : ' timmar');
+  const fmtShort = n => fmtNum(n) + ' h';
+  const areaById = id => areas.find(a => a.id === id) || { name:'Okänt område', color:'var(--grey)' };
+  const pad = n => String(n).padStart(2, '0');
+  const fmtTime = m => `${pad(Math.floor(m / 60) % 24)}:${pad(Math.round(m % 60))}`;
+  const parseTime = s => { const m = /^(\d{1,2}):(\d{2})$/.exec(s || ''); return m ? (+m[1]) * 60 + (+m[2]) : 8 * 60 + 30; };
+  const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+  const sumBy = (list, fn) => list.reduce((s, x) => s + fn(x), 0);
+
+  // --- Budget ---
+  function computeBudget() {
+    const W = num(settings.veckotimmar);
+    const C = num(settings.kundtimmar);
+    const base = {};
+    (settings.grundplan || []).forEach(p => { base[p.area_id] = (base[p.area_id] || 0) + num(p.hours); });
+
+    const fixedSum = sumBy(areas.filter(a => a.fixed && !a.is_client), a => base[a.id] || 0);
+    const scalable = areas.filter(a => !a.fixed && !a.is_client);
+    const S = sumBy(scalable, a => base[a.id] || 0);
+    const avail = W - C - fixedSum;
+    const over = avail < 0 ? -avail : 0;
+    const target = Math.max(0, Math.min(S, avail));
+
+    // Fördela i hela timmar (halvtimmar bara om något redan är halvt), största rest först
+    const allWhole = [target, ...scalable.map(a => base[a.id] || 0)].every(Number.isInteger);
+    const unit = allWhole ? 1 : 0.5;
+    const budget = {};
+    if (S > 0) {
+      const rows = scalable.map(a => {
+        const raw = (base[a.id] || 0) * target / S / unit;
+        return { id: a.id, floor: Math.floor(raw + 1e-9), rest: raw - Math.floor(raw + 1e-9), base: base[a.id] || 0 };
+      });
+      let left = Math.round(target / unit) - sumBy(rows, r => r.floor);
+      rows.slice().sort((a, b) => b.rest - a.rest || b.base - a.base).forEach(r => { if (left > 0 && r.rest > 1e-9) { r.floor++; left--; } });
+      rows.forEach(r => budget[r.id] = r.floor * unit);
+    }
+    areas.forEach(a => {
+      if (a.is_client) budget[a.id] = C;
+      else if (a.fixed) budget[a.id] = base[a.id] || 0;
+      else if (budget[a.id] == null) budget[a.id] = 0;
+    });
+    return { W, C, base, budget, over };
+  }
+
+  // --- Render ---
+  function renderAll() {
+    const root = document.getElementById('root');
+    root.innerHTML = `
+      <div class="section">
+        <div class="section-header"><div class="section-dot" style="background:var(--green)"></div><span class="section-title">Veckan</span></div>
+        <div class="panel" id="week"></div>
+      </div>
+      <div class="section">
+        <div class="section-header"><div class="section-dot" style="background:var(--lavender)"></div><span class="section-title">Dagarna</span><span class="section-meta" id="daysMeta"></span></div>
+        <div class="days" id="days"></div>
+        <div class="plan-tools" id="planTools"></div>
+      </div>
+      <div class="section">
+        <div class="section-header"><div class="section-dot" style="background:var(--peach)"></div><span class="section-title">Flytten</span></div>
+        <div class="panel" id="flytt"></div>
+      </div>
+      <div class="section">
+        <div class="section-header"><div class="section-dot" style="background:var(--grey)"></div><span class="section-title">Inställningar</span></div>
+        <div class="panel" id="settings"></div>
+      </div>`;
+    renderWeek(); renderDays(); renderPlanTools(); renderFlytt(); renderSettings();
+  }
+
+  function renderWeek() {
+    const { W, C, base, budget, over } = computeBudget();
+    const inDays = {};
+    passes.forEach(p => { inDays[p.area_id] = (inDays[p.area_id] || 0) + num(p.hours); });
+    const plannedTotal = sumBy(passes, p => num(p.hours));
+    const internal = sumBy(areas.filter(a => !a.is_client), a => budget[a.id] || 0);
+
+    const rows = areas.slice().sort((a, b) => a.sort_order - b.sort_order).map(a => {
+      const b = budget[a.id] || 0, d = inDays[a.id] || 0, diff = d - b;
+      let status;
+      if (Math.abs(diff) < 1e-9) status = `<span class="status ok">OK</span>`;
+      else if (diff > 0) status = `<span class="status cut">Stryk ${fmtShort(diff)}</span>`;
+      else status = `<span class="status add">${a.is_client ? 'Planera in' : 'Plats för'} ${fmtShort(-diff)}</span>`;
+      if (a.is_client && b === 0 && d === 0) status = '<span class="num-muted">–</span>';
+
+      const chip = a.is_client
+        ? '<span class="chip client">kund</span>'
+        : `<button class="chip${a.fixed ? ' fixed' : ''}" onclick="toggleFixed('${escapeAttr(a.id)}')" title="Växla mellan fast och skalas ned">${a.fixed ? 'fast' : 'skalas'}</button>`;
+      const inUse = passes.some(p => p.area_id === a.id) || (settings.grundplan || []).some(p => p.area_id === a.id);
+      const del = (a.is_client || inUse) ? '' : `<button class="area-del" onclick="removeArea('${escapeAttr(a.id)}')" title="Ta bort området">${X_SVG}</button>`;
+
+      return `<tr data-area="${escapeAttr(a.id)}">
+        <td><div class="area-name"><span class="dot" style="background:${a.color}"></span><span class="name" onclick="renameArea('${escapeAttr(a.id)}')" title="Byt namn">${escapeHtml(a.name)}</span>${del}</div></td>
+        <td class="col-base num-muted">${a.is_client ? '–' : fmtShort(base[a.id] || 0)}</td>
+        <td class="num-strong">${fmtShort(b)}</td>
+        <td class="col-days">${fmtShort(d)}</td>
+        <td>${status}</td>
+        <td>${chip}</td>
+      </tr>`;
+    }).join('');
+
+    const totalClass = Math.abs(plannedTotal - W) < 1e-9 ? 'ok' : (plannedTotal > W ? 'bad' : '');
+    document.getElementById('week').innerHTML = `
+      <div class="client-row">
+        <div class="client-label">Kundtimmar den här veckan<small>Skriv in när ett uppdrag kommer in. Sätt tillbaka till 0 när det är klart.</small></div>
+        <div class="stepper">
+          <button onclick="stepClient(-1)" aria-label="En timme mindre">−</button>
+          <input id="clientInput" inputmode="decimal" value="${fmtNum(C)}" aria-label="Kundtimmar">
+          <button onclick="stepClient(1)" aria-label="En timme mer">+</button>
+          <span>timmar</span>
+        </div>
+      </div>
+      <div class="totals">
+        <span class="pill">Kund <strong>${fmtShort(C)}</strong></span>
+        <span class="pill">Övrigt <strong>${fmtShort(internal)}</strong></span>
+        <span class="pill ${totalClass}">Inplanerat i dagarna <strong>${fmtShort(plannedTotal)}</strong> av ${fmtShort(W)}</span>
+      </div>
+      ${over > 0 ? `<div class="warn-box">Kundtimmarna och de fasta områdena går över ${fmtH(W)} med ${fmtH(over)}. Allt som skalas är redan nere på noll, så något fast behöver också flyttas.</div>` : ''}
+      <table class="area-table">
+        <thead><tr><th>Område</th><th class="col-base">Grund</th><th>Budget nu</th><th class="col-days">I dagarna</th><th>Att göra</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <button class="add-btn" onclick="addArea(this)">+ Lägg till område</button>`;
+
+    const ci = document.getElementById('clientInput');
+    ci.addEventListener('change', () => setClient(num(ci.value)));
+    ci.addEventListener('keydown', e => { if (e.key === 'Enter') ci.blur(); });
+  }
+
+  function dayTimeline(dayPasses) {
+    let t = parseTime(settings.starttid);
+    const lunch = Math.max(0, num(settings.lunch_min));
+    let lunchDone = lunch === 0;
+    const out = [];
+    dayPasses.forEach((p, i) => {
+      const start = t, end = t + num(p.hours) * 60;
+      out.push({ type:'pass', p, start, end });
+      t = end;
+      if (!lunchDone && t >= LUNCH_AFTER && i < dayPasses.length - 1) {
+        out.push({ type:'lunch', start:t, end:t + lunch });
+        t += lunch; lunchDone = true;
+      }
+    });
+    return out;
+  }
+
+  function passHTML(p, start, end) {
+    const a = areaById(p.area_id);
+    const note = p.note ? `<div class="pass-note">${escapeHtml(p.note)}</div>` : '';
+    return `<div class="drag-handle" draggable="true">${DRAG_SVG}</div>
+      <span class="pass-bar" style="background:${a.color}"></span>
+      <span class="pass-time">${fmtTime(start)}–${fmtTime(end)}</span>
+      <div class="pass-main"><div class="pass-area">${escapeHtml(a.name)}</div>${note}</div>
+      <span class="pass-hours">${fmtH(num(p.hours))}</span>
+      <div class="pass-actions">
+        <span class="edit-hint" onclick="editPass('${escapeAttr(p.id)}')">redigera</span>
+        <button class="x-btn" onclick="removePass('${escapeAttr(p.id)}')" title="Ta bort">${X_SVG}</button>
+      </div>`;
+  }
+
+  function renderDays() {
+    const W = num(settings.veckotimmar);
+    const perDay = W / 5;
+    const el = document.getElementById('days');
+    el.innerHTML = '';
+    days.slice().sort((a, b) => a.day - b.day).forEach(d => {
+      const dayPasses = passes.filter(p => p.day === d.day).sort((a, b) => a.sort_order - b.sort_order);
+      const total = sumBy(dayPasses, p => num(p.hours));
+      const box = document.createElement('div');
+      box.className = 'day';
+      box.dataset.day = d.day;
+      box.innerHTML = `<div class="day-head">
+          <span class="day-name">${DAY_NAMES[d.day]}</span>
+          <span class="day-title" onclick="editDayTitle(${d.day})" title="Byt tema">${escapeHtml(d.title) || 'Lägg till tema'}</span>
+          <span class="day-sum${total > perDay ? ' over' : ''}">${fmtH(total)}</span>
+        </div>
+        <div class="passes"></div>
+        <button class="add-btn" onclick="addPass(${d.day})">+ Lägg till pass</button>`;
+      const list = box.querySelector('.passes');
+      dayTimeline(dayPasses).forEach(item => {
+        if (item.type === 'lunch') {
+          const l = document.createElement('div');
+          l.className = 'lunch';
+          l.innerHTML = `<span class="pass-time">${fmtTime(item.start)}–${fmtTime(item.end)}</span><span>Lunch</span>`;
+          list.appendChild(l);
+        } else {
+          const row = document.createElement('div');
+          row.className = 'pass';
+          row.dataset.id = item.p.id;
+          row.innerHTML = passHTML(item.p, item.start, item.end);
+          list.appendChild(row);
+          initDrag(row);
+        }
+      });
+      el.appendChild(box);
+    });
+    initDrop();
+    document.getElementById('daysMeta').textContent = `Start ${fmtTime(parseTime(settings.starttid))} · lunch ${fmtNum(num(settings.lunch_min))} min`;
+  }
+
+  function renderPlanTools(mode) {
+    const el = document.getElementById('planTools');
+    if (mode === 'restore') {
+      el.innerHTML = `<div class="confirm">Dagarna blir som grundplanen igen. Ändringar du gjort i passen försvinner.
+        <button class="btn btn-save" onclick="restorePlan()">Ja, återställ</button>
+        <button class="btn btn-cancel" onclick="renderPlanTools()">Avbryt</button></div>`;
+    } else if (mode === 'save') {
+      el.innerHTML = `<div class="confirm">Dagarna som de ser ut nu blir den nya grundplanen, och budgeten räknas från dem.
+        <button class="btn btn-save" onclick="savePlan()">Ja, spara</button>
+        <button class="btn btn-cancel" onclick="renderPlanTools()">Avbryt</button></div>`;
+    } else {
+      el.innerHTML = `<button class="btn btn-ghost" onclick="renderPlanTools('restore')">Återställ dagarna till grundplanen</button>
+        <button class="btn btn-ghost" onclick="renderPlanTools('save')">Spara dagarna som ny grundplan</button>`;
+    }
+  }
+
+  function renderFlytt() {
+    const tak = num(settings.flytt_tak);
+    const used = sumBy(logg, l => num(l.hours));
+    const pct = tak > 0 ? Math.min(100, used / tak * 100) : 0;
+    const left = tak - used;
+    const items = logg.slice().sort((a, b) => (b.datum || '').localeCompare(a.datum || '') || (b.created_at || '').localeCompare(a.created_at || '')).map(l => {
+      const [y, m, d] = (l.datum || '').split('-');
+      return `<div class="log-item">
+        <span class="log-date">${d ? `${+d}/${+m} ${y}` : ''}</span>
+        <span class="log-note">${escapeHtml(l.note) || '<span class="num-muted">Flytten</span>'}</span>
+        <span class="log-hours">${fmtShort(num(l.hours))}</span>
+        <button class="x-btn" onclick="removeLog('${escapeAttr(l.id)}')" title="Ta bort">${X_SVG}</button>
+      </div>`;
+    }).join('');
+
+    document.getElementById('flytt').innerHTML = `
+      <div class="meter-top">
+        <span class="meter-label">Använt av taket på ${fmtH(tak)}</span>
+        <span class="meter-count${left < 0 ? ' over' : ''}">${fmtShort(used)} · ${left >= 0 ? fmtShort(left) + ' kvar' : fmtShort(-left) + ' över taket'}</span>
+      </div>
+      <div class="meter-track"><div class="meter-fill" style="width:${pct}%"></div></div>
+      <div class="log-form">
+        <input class="in-date" type="date" id="logDate" value="${todayKey()}">
+        <input class="in-hours" id="logHours" inputmode="decimal" placeholder="Timmar">
+        <input class="in-note" id="logNote" placeholder="Vad gjorde du? (valfritt)">
+        <button class="btn btn-save" onclick="addLog()">Logga</button>
+      </div>
+      ${items ? `<div class="log-list">${items}</div>` : '<div class="log-empty">Inga flyttimmar loggade än.</div>'}`;
+    ['logHours', 'logNote'].forEach(id => document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') addLog(); }));
+  }
+
+  function renderSettings() {
+    document.getElementById('settings').innerHTML = `<div class="settings">
+      <label>Dagen börjar <input type="time" id="setStart" value="${escapeAttr(fmtTime(parseTime(settings.starttid)))}"></label>
+      <label>Lunch, minuter <input id="setLunch" inputmode="numeric" value="${fmtNum(num(settings.lunch_min))}"></label>
+      <label>Timmar i veckan <input id="setWeek" inputmode="decimal" value="${fmtNum(num(settings.veckotimmar))}"></label>
+      <label>Tak för flytten <input id="setTak" inputmode="decimal" value="${fmtNum(num(settings.flytt_tak))}"></label>
+    </div>`;
+    const bind = (id, key, conv) => document.getElementById(id).addEventListener('change', e => saveSetting(key, conv(e.target.value)));
+    bind('setStart', 'starttid', v => /^\d{1,2}:\d{2}$/.test(v) ? v : settings.starttid);
+    bind('setLunch', 'lunch_min', v => Math.max(0, Math.round(num(v))));
+    bind('setWeek', 'veckotimmar', v => Math.max(1, num(v)));
+    bind('setTak', 'flytt_tak', v => Math.max(0, num(v)));
+  }
+
+  // --- Veckan ---
+  async function setClient(v) {
+    v = Math.max(0, Math.round(v * 2) / 2);
+    settings.kundtimmar = v;
+    renderWeek();
+    await patch('tidsbudget_settings', 'id=eq.main', { kundtimmar: v });
+  }
+  function stepClient(delta) { setClient(num(settings.kundtimmar) + delta); }
+
+  async function saveSetting(key, value) {
+    settings[key] = value;
+    renderAll();
+    await patch('tidsbudget_settings', 'id=eq.main', { [key]: value });
+  }
+
+  async function toggleFixed(id) {
+    const a = areas.find(x => x.id === id);
+    a.fixed = !a.fixed;
+    renderWeek();
+    await patch('tidsbudget_areas', `id=eq.${encodeURIComponent(id)}`, { fixed: a.fixed });
+  }
+
+  function renameArea(id) {
+    const a = areas.find(x => x.id === id);
+    const span = document.querySelector(`tr[data-area="${CSS.escape(id)}"] .name`);
+    if (!span) return;
+    const input = document.createElement('input');
+    input.className = 'name-input';
+    input.value = a.name;
+    span.replaceWith(input);
+    input.focus(); input.select();
+    let done = false;
+    const finish = async save => {
+      if (done) return; done = true;
+      const name = input.value.trim();
+      if (save && name && name !== a.name) {
+        a.name = name;
+        renderWeek(); renderDays();
+        await patch('tidsbudget_areas', `id=eq.${encodeURIComponent(id)}`, { name });
+      } else renderWeek();
+    };
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') finish(true); if (e.key === 'Escape') finish(false); });
+    input.addEventListener('blur', () => finish(true));
+  }
+
+  function addArea(btn) {
+    if (document.getElementById('newArea')) return;
+    const box = document.createElement('div');
+    box.id = 'newArea';
+    box.className = 'edit-grid';
+    box.style.marginTop = '10px';
+    box.innerHTML = `<input class="in-note" placeholder="Namn på området">
+      <select>${COLORS.map((c, i) => `<option value="${c}">${['Blå','Lila','Rosa','Persika','Mint','Grön','Grå'][i]}</option>`).join('')}</select>
+      <div class="edit-actions" style="width:auto;margin:0">
+        <button class="btn-save">Spara</button><button class="btn-cancel">Avbryt</button>
+      </div>`;
+    btn.before(box);
+    const input = box.querySelector('input');
+    input.focus();
+    const save = async () => {
+      const name = input.value.trim();
+      if (!name) { input.focus(); return; }
+      const a = { id: 'area-' + Date.now(), name, color: box.querySelector('select').value, fixed: false, is_client: false,
+                  sort_order: Math.max(0, ...areas.map(x => x.sort_order)) + 1 };
+      const res = await sbFetch('tidsbudget_areas', { method:'POST', body: JSON.stringify(a) });
+      if (res) { areas.push(a); renderWeek(); }
+    };
+    box.querySelector('.btn-save').onclick = save;
+    box.querySelector('.btn-cancel').onclick = () => box.remove();
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') box.remove(); });
+  }
+
+  async function removeArea(id) {
+    areas = areas.filter(a => a.id !== id);
+    renderWeek();
+    await sbFetch(`tidsbudget_areas?id=eq.${encodeURIComponent(id)}`, { method:'DELETE' });
+  }
+
+  // --- Dagarna ---
+  function editDayTitle(day) {
+    const d = days.find(x => x.day === day);
+    const span = document.querySelector(`.day[data-day="${day}"] .day-title`);
+    const input = document.createElement('input');
+    input.className = 'name-input';
+    input.value = d.title || '';
+    span.replaceWith(input);
+    input.focus(); input.select();
+    let done = false;
+    const finish = async save => {
+      if (done) return; done = true;
+      const title = input.value.trim();
+      if (save && title !== d.title) {
+        d.title = title;
+        renderDays();
+        await patch('tidsbudget_days', `day=eq.${day}`, { title });
+      } else renderDays();
+    };
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') finish(true); if (e.key === 'Escape') finish(false); });
+    input.addEventListener('blur', () => finish(true));
+  }
+
+  function editForm(p) {
+    const opts = areas.slice().sort((a, b) => a.sort_order - b.sort_order)
+      .map(a => `<option value="${escapeAttr(a.id)}"${a.id === p.area_id ? ' selected' : ''}>${escapeHtml(a.name)}</option>`).join('');
+    const dayOpts = [1,2,3,4,5].map(n => `<option value="${n}"${n === p.day ? ' selected' : ''}>${DAY_NAMES[n]}</option>`).join('');
+    return `<div class="edit-grid">
+        <select class="in-area">${opts}</select>
+        <input class="in-hours" inputmode="decimal" value="${fmtNum(num(p.hours))}" aria-label="Timmar"><label>timmar</label>
+        <select class="in-day">${dayOpts}</select>
+        <input class="in-note" placeholder="Anteckning (valfritt)" value="${escapeAttr(p.note || '')}">
+      </div>
+      <div class="edit-actions">
+        <button class="btn-save">Spara</button>
+        <button class="btn-cancel">Avbryt</button>
+        ${p.id ? '<button class="btn-delete">Ta bort</button>' : ''}
+      </div>`;
+  }
+
+  function readForm(row) {
+    return {
+      area_id: row.querySelector('.in-area').value,
+      hours: Math.max(0.5, Math.round(num(row.querySelector('.in-hours').value) * 2) / 2),
+      day: +row.querySelector('.in-day').value,
+      note: row.querySelector('.in-note').value.trim()
+    };
+  }
+
+  function wireForm(row, onSave) {
+    row.querySelector('.btn-save').onclick = onSave;
+    row.querySelector('.btn-cancel').onclick = () => renderDays();
+    const del = row.querySelector('.btn-delete');
+    if (del) del.onclick = () => removePass(row.dataset.id);
+    row.querySelectorAll('input').forEach(i => i.addEventListener('keydown', e => {
+      if (e.key === 'Enter') onSave();
+      if (e.key === 'Escape') renderDays();
+    }));
+  }
+
+  function editPass(id) {
+    const p = passes.find(x => x.id === id);
+    const row = document.querySelector(`.pass[data-id="${CSS.escape(id)}"]`);
+    if (!p || !row || row.classList.contains('editing')) return;
+    row.className = 'pass editing';
+    row.innerHTML = editForm(p);
+    row.querySelector('.in-hours').focus();
+    wireForm(row, async () => {
+      const data = readForm(row);
+      const moved = data.day !== p.day;
+      Object.assign(p, data);
+      if (moved) p.sort_order = Math.max(-1, ...passes.filter(x => x.day === data.day && x.id !== id).map(x => x.sort_order)) + 1;
+      renderDays(); renderWeek();
+      await patch('tidsbudget_passes', `id=eq.${encodeURIComponent(id)}`, { ...data, sort_order: p.sort_order });
+    });
+  }
+
+  function addPass(day) {
+    const box = document.querySelector(`.day[data-day="${day}"] .passes`);
+    if (box.querySelector('.pass.editing.new')) return;
+    const defaultArea = num(settings.kundtimmar) > 0 ? 'kund' : (areas.find(a => !a.is_client) || areas[0]).id;
+    const row = document.createElement('div');
+    row.className = 'pass editing new';
+    row.innerHTML = editForm({ day, area_id: defaultArea, hours: 1, note: '' });
+    box.appendChild(row);
+    row.querySelector('.in-area').focus();
+    wireForm(row, async () => {
+      const data = readForm(row);
+      const p = { id: 'pass-' + Date.now(), ...data,
+                  sort_order: Math.max(-1, ...passes.filter(x => x.day === data.day).map(x => x.sort_order)) + 1 };
+      const res = await sbFetch('tidsbudget_passes', { method:'POST', body: JSON.stringify(p) });
+      if (res) { passes.push(p); renderDays(); renderWeek(); }
+    });
+  }
+
+  async function removePass(id) {
+    passes = passes.filter(p => p.id !== id);
+    renderDays(); renderWeek();
+    await sbFetch(`tidsbudget_passes?id=eq.${encodeURIComponent(id)}`, { method:'DELETE' });
+  }
+
+  async function savePlan() {
+    const snap = passes.slice().sort((a, b) => a.day - b.day || a.sort_order - b.sort_order)
+      .map(p => ({ id: p.id, day: p.day, area_id: p.area_id, hours: num(p.hours), note: p.note || '', sort_order: p.sort_order }));
+    settings.grundplan = snap;
+    renderAll();
+    await patch('tidsbudget_settings', 'id=eq.main', { grundplan: snap });
+  }
+
+  async function restorePlan() {
+    const snap = (settings.grundplan || []).filter(p => areas.some(a => a.id === p.area_id)).map(p => ({ ...p }));
+    const del = await sbFetch('tidsbudget_passes?id=not.is.null', { method:'DELETE' });
+    if (del === null) return;
+    if (snap.length) {
+      const res = await sbFetch('tidsbudget_passes', { method:'POST', body: JSON.stringify(snap) });
+      if (res === null) return;
+    }
+    passes = snap;
+    renderAll();
+  }
+
+  // --- Dra och släpp ---
+  let dragged = null;
+  function initDrag(row) {
+    const handle = row.querySelector('.drag-handle');
+    if (!handle) return;
+    handle.addEventListener('dragstart', e => {
+      dragged = row; row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', row.dataset.id);
+    });
+    handle.addEventListener('dragend', () => {
+      if (dragged) dragged.classList.remove('dragging');
+      dragged = null;
+      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      document.querySelectorAll('.drag-over-empty').forEach(el => el.classList.remove('drag-over-empty'));
+    });
+    row.addEventListener('dragover', e => {
+      e.preventDefault(); e.stopPropagation();
+      if (!dragged || dragged === row) return;
+      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', e => {
+      e.preventDefault(); e.stopPropagation();
+      row.classList.remove('drag-over');
+      if (!dragged || dragged === row) return;
+      row.parentNode.insertBefore(dragged, row);
+      saveOrder();
+    });
+  }
+
+  function initDrop() {
+    document.querySelectorAll('.passes').forEach(list => {
+      list.addEventListener('dragover', e => {
+        e.preventDefault();
+        if (dragged && !list.querySelector('.pass:not(.dragging)')) list.classList.add('drag-over-empty');
+      });
+      list.addEventListener('dragleave', () => list.classList.remove('drag-over-empty'));
+      list.addEventListener('drop', e => {
+        e.preventDefault();
+        list.classList.remove('drag-over-empty');
+        if (!dragged) return;
+        list.appendChild(dragged);
+        saveOrder();
+      });
+    });
+  }
+
+  async function saveOrder() {
+    dragged = null;
+    const updates = [];
+    document.querySelectorAll('.day').forEach(dayEl => {
+      const day = +dayEl.dataset.day;
+      dayEl.querySelectorAll('.pass[data-id]').forEach((row, i) => {
+        const p = passes.find(x => x.id === row.dataset.id);
+        if (p && (p.day !== day || p.sort_order !== i)) { p.day = day; p.sort_order = i; updates.push(p); }
+      });
+    });
+    renderDays(); renderWeek();
+    await Promise.all(updates.map(p => patch('tidsbudget_passes', `id=eq.${encodeURIComponent(p.id)}`, { day: p.day, sort_order: p.sort_order })));
+  }
+
+  // --- Flytten ---
+  async function addLog() {
+    const hoursEl = document.getElementById('logHours');
+    const hours = Math.round(num(hoursEl.value) * 4) / 4;
+    if (hours <= 0) { hoursEl.focus(); return; }
+    const entry = { id: 'logg-' + Date.now(), datum: document.getElementById('logDate').value || todayKey(),
+                    hours, note: document.getElementById('logNote').value.trim(), created_at: new Date().toISOString() };
+    const res = await sbFetch('tidsbudget_flytt_logg', { method:'POST', body: JSON.stringify(entry) });
+    if (res) { logg.push(entry); renderFlytt(); }
+  }
+
+  async function removeLog(id) {
+    logg = logg.filter(l => l.id !== id);
+    renderFlytt();
+    await sbFetch(`tidsbudget_flytt_logg?id=eq.${encodeURIComponent(id)}`, { method:'DELETE' });
+  }
+
+  // --- Start ---
+  (async () => {
+    const [s, a, d, p, l] = await Promise.all([
+      sbFetch('tidsbudget_settings?id=eq.main&select=*'),
+      sbFetch('tidsbudget_areas?select=*&order=sort_order'),
+      sbFetch('tidsbudget_days?select=*&order=day'),
+      sbFetch('tidsbudget_passes?select=*&order=day,sort_order'),
+      sbFetch('tidsbudget_flytt_logg?select=*&order=datum.desc')
+    ]);
+    if (!s || !s.length || !a || !d || !p || !l) {
+      document.getElementById('root').innerHTML = '<div class="loading">Kunde inte hämta tidsbudgeten. Ladda om sidan.</div>';
+      return;
+    }
+    settings = s[0]; areas = a; days = d; passes = p; logg = l;
+    renderAll();
+  })();
+</script>
+
+</body>
+</html>
