@@ -248,6 +248,23 @@
   }
   .settings input:focus { outline:none; border-color:var(--accent); }
 
+  /* VECKOVÄLJARE */
+  .week-tabs { display:flex; gap:6px; justify-content:center; margin:0 0 22px; flex-wrap:wrap; }
+  .week-tab {
+    font-family:inherit; font-size:13px; font-weight:600; padding:7px 16px; border-radius:20px; cursor:pointer;
+    border:1px solid var(--border); background:#fff; color:var(--text-secondary);
+  }
+  .week-tab:hover { border-color:var(--accent); color:var(--accent); }
+  .week-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .archive-note {
+    background:rgba(176,138,204,0.08); border:1px solid var(--border); border-radius:16px;
+    padding:12px 18px; font-size:13.5px; color:#5a4f6b; margin-bottom:26px; text-align:center;
+  }
+  .readonly .add-btn, .readonly .pass-actions, .readonly .drag-handle, .readonly .area-del,
+  .readonly .stepper button, .readonly .plan-tools { display:none; }
+  .readonly .check, .readonly .chip, .readonly .name, .readonly .day-title { pointer-events:none; }
+  .readonly input:disabled { background:#fff; opacity:1; -webkit-text-fill-color:currentColor; }
+
   .loading { text-align:center; padding:50px 0; color:var(--text-secondary); font-size:14px; }
   footer { text-align:center; padding:34px 20px 10px; color:var(--text-secondary); font-size:12px; }
   footer.error { color:var(--stop); font-weight:600; }
@@ -286,12 +303,14 @@
 
 <div class="hero">
   <h1>Tidsbudget</h1>
-  <p>Flytt Torsplan 10 · veckan i hela pass</p>
+  <p id="heroSub">Flytt Torsplan 10 · veckan i hela pass</p>
 </div>
 
 <div class="container">
 
-  <div class="intro">
+  <div class="week-tabs" id="weekTabs"></div>
+
+  <div class="intro" id="intro">
     Skriv hur lång tid du faktiskt lade i rutan <strong>Gjort</strong> på passet, eller bocka av om det blev som planerat.
     Drar ett pass över krymper <strong>resten av dagen</strong>. Ett kundpass gör likadant.
     Går ett område över veckans budget står det <strong>STOPP</strong>, och områdets resterande pass stryks.
@@ -342,6 +361,7 @@
 
   // --- State ---
   let settings = null, areas = [], days = [], passes = [], logg = [];
+  let live = null, arkiv = null, viewing = 'live'; // arkiv = förra veckan (läsläge)
 
   const escapeHtml = s => { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; };
   const escapeAttr = s => (s == null ? '' : String(s)).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;');
@@ -366,6 +386,13 @@
     const w1 = new Date(d.getFullYear(), 0, 4);
     return 1 + Math.round(((d - w1) / 864e5 - 3 + ((w1.getDay() + 6) % 7)) / 7);
   }
+  // ISO-vecka som nyckel, t.ex. '2026-W39' (ISO-året kan skilja från kalenderåret runt nyår)
+  function weekKey(date) {
+    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
+    return `${d.getFullYear()}-W${pad(isoWeek(date))}`;
+  }
+  const weekNo = key => key ? +String(key).split('W')[1] : '';
 
   // Fördela target timmar på vikter i halvtimmar, största rest först
   function distribute(weights, target, unit = UNIT) {
@@ -475,6 +502,39 @@
         <div class="panel" id="settings"></div>
       </div>`;
     renderPlanTools(); renderSettings(); refresh();
+  }
+
+  function renderTabs() {
+    const cur = weekNo(settings.vecka);
+    document.getElementById('heroSub').textContent = `Flytt Torsplan 10 · vecka ${cur}`;
+    document.getElementById('weekTabs').innerHTML = `
+      <button class="week-tab${viewing === 'live' ? ' active' : ''}" onclick="showWeek('live')">Vecka ${weekNo(live.settings.vecka)} · denna vecka</button>
+      ${arkiv ? `<button class="week-tab${viewing === 'arkiv' ? ' active' : ''}" onclick="showWeek('arkiv')">Vecka ${weekNo(arkiv.vecka)} · förra veckan</button>` : ''}`;
+  }
+
+  function showWeek(which) {
+    // Ändringar byter ibland ut hela listorna, så spara tillbaka det levande läget innan vi byter vy
+    if (viewing === 'live' && settings) live = { settings, areas, days, passes };
+    const src = which === 'arkiv' && arkiv ? arkiv.snapshot : live;
+    viewing = which === 'arkiv' && arkiv ? 'arkiv' : 'live';
+    settings = src.settings; areas = src.areas; days = src.days; passes = src.passes;
+    const root = document.getElementById('root');
+    const intro = document.getElementById('intro');
+    renderTabs();
+    if (viewing === 'arkiv') {
+      intro.style.display = 'none';
+      root.className = 'readonly';
+      renderAll();
+      // Arkivet visar bara veckan och dagarna, precis som de såg ut när veckan tog slut
+      root.querySelectorAll('.section')[2].remove();
+      root.querySelectorAll('.section')[2].remove();
+      root.querySelectorAll('input, select').forEach(i => i.disabled = true);
+      root.insertAdjacentHTML('afterbegin', `<div class="archive-note">Sparad vecka ${weekNo(arkiv.vecka)}, så som den såg ut när veckan tog slut. Den kan inte ändras.</div>`);
+    } else {
+      intro.style.display = '';
+      root.className = '';
+      renderAll();
+    }
   }
 
   function refresh() {
@@ -631,17 +691,13 @@
 
   function renderPlanTools(mode) {
     const el = document.getElementById('planTools');
-    if (mode === 'week') {
-      el.innerHTML = `<div class="confirm">Alla Gjort nollställs och dagarna blir som grundplanen igen. Veckans flyttimmar sparas i flyttmätaren.
-        <button class="btn btn-save" onclick="newWeek()">Ja, ny vecka</button>
-        <button class="btn btn-cancel" onclick="renderPlanTools()">Avbryt</button></div>`;
-    } else if (mode === 'save') {
+    if (mode === 'save') {
       el.innerHTML = `<div class="confirm">Passens planerade timmar blir den nya grundplanen (kundpass räknas inte med).
         <button class="btn btn-save" onclick="savePlan()">Ja, spara</button>
         <button class="btn btn-cancel" onclick="renderPlanTools()">Avbryt</button></div>`;
     } else {
-      el.innerHTML = `<button class="btn btn-ghost" onclick="renderPlanTools('week')">Starta ny vecka</button>
-        <button class="btn btn-ghost" onclick="renderPlanTools('save')">Spara dagarna som ny grundplan</button>`;
+      el.innerHTML = `<button class="btn btn-ghost" onclick="renderPlanTools('save')">Spara dagarna som ny grundplan</button>
+        <span class="confirm" style="color:var(--text-secondary)">Varje måndag sparas veckan automatiskt och en ny startar från grundplanen.</span>`;
     }
   }
 
@@ -886,24 +942,6 @@
     await patch('tidsbudget_settings', 'id=eq.main', { grundplan: snap });
   }
 
-  async function newWeek() {
-    const flyttDone = sumBy(passes.filter(p => p.area_id === 'flytten' && hasDone(p)), p => num(p.done_hours));
-    if (flyttDone > 0) {
-      const entry = { id: 'logg-' + Date.now(), datum: todayKey(), hours: flyttDone, note: `Vecka ${isoWeek(new Date())}` };
-      const res = await sbFetch('tidsbudget_flytt_logg', { method:'POST', body: JSON.stringify(entry) });
-      if (res === null) return;
-      logg.push(entry);
-    }
-    const snap = (settings.grundplan || []).filter(p => areas.some(a => a.id === p.area_id))
-      .map(p => ({ id: p.id, day: p.day, area_id: p.area_id, hours: num(p.hours), note: p.note || '', sort_order: p.sort_order, done_hours: null }));
-    if (await sbFetch('tidsbudget_passes?id=not.is.null', { method:'DELETE' }) === null) return;
-    if (snap.length && await sbFetch('tidsbudget_passes', { method:'POST', body: JSON.stringify(snap) }) === null) return;
-    await patch('tidsbudget_settings', 'id=eq.main', { kundtimmar: 0 });
-    passes = snap;
-    settings.kundtimmar = 0;
-    renderPlanTools(); refresh();
-  }
-
   async function removeLog(id) {
     logg = logg.filter(l => l.id !== id);
     refresh();
@@ -975,19 +1013,24 @@
 
   // --- Start ---
   (async () => {
-    const [s, a, d, p, l] = await Promise.all([
+    // Ny vecka? Då arkiveras förra veckan och en ny startas från grundplanen (görs i databasen, bara en gång per vecka)
+    await sbFetch('rpc/tidsbudget_rollover', { method:'POST', body: JSON.stringify({ p_vecka: weekKey(new Date()) }) });
+    const [s, a, d, p, l, ark] = await Promise.all([
       sbFetch('tidsbudget_settings?id=eq.main&select=*'),
       sbFetch('tidsbudget_areas?select=*&order=sort_order'),
       sbFetch('tidsbudget_days?select=*&order=day'),
       sbFetch('tidsbudget_passes?select=*&order=day,sort_order'),
-      sbFetch('tidsbudget_flytt_logg?select=*&order=datum.desc')
+      sbFetch('tidsbudget_flytt_logg?select=*&order=datum.desc'),
+      sbFetch('tidsbudget_arkiv?select=*&order=vecka.desc&limit=1')
     ]);
     if (!s || !s.length || !a || !d || !p || !l) {
       document.getElementById('root').innerHTML = '<div class="loading">Kunde inte hämta tidsbudgeten. Ladda om sidan.</div>';
       return;
     }
-    settings = s[0]; areas = a; days = d; passes = p; logg = l;
-    renderAll();
+    logg = l;
+    live = { settings: s[0], areas: a, days: d, passes: p };
+    arkiv = ark && ark.length ? ark[0] : null;
+    showWeek('live');
   })();
 </script>
 
