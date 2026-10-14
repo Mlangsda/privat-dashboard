@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mikael härvan — tidslinje</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Italiana&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --card: #ffffff;
+    --border: rgba(200,180,210,0.32);
+    --text: #2d2440;
+    --text-secondary: #8a7a9e;
+    --accent: #b08acc;
+    --accent-hover: #9a74b8;
+    --lavender: #b08acc;
+    --rose: #d4899e;
+    --peach: #d4a889;
+    --mint: #89b8a8;
+    --sky: #89a8d4;
+    --coral: #d4766f;
+    --line: rgba(176,138,204,0.35);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'SF Pro Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:#fdfcfe; color:var(--text); line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding-bottom:60px;
+  }
+
+  .top-bar {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 22px; font-size:13px; border-bottom:1px solid var(--border); background:#fff;
+    position:sticky; top:0; z-index:20;
+  }
+  .top-bar a { color:var(--accent); text-decoration:none; font-weight:500; }
+  .top-bar a:hover { text-decoration:underline; }
+
+  .hero { text-align:center; padding:48px 20px 22px; }
+  .hero h1 { font-family:'Italiana',serif; font-size:52px; font-weight:400; letter-spacing:1px; line-height:1.05; }
+  .hero p { color:var(--text-secondary); font-size:15px; margin-top:8px; }
+
+  .container { max-width:900px; margin:0 auto; padding:0 18px; }
+
+  .intro {
+    background:#fff; border:1px solid var(--border); border-radius:16px;
+    padding:18px 20px; font-size:14px; color:#5a4f6b; margin-bottom:18px;
+  }
+  .intro strong { color:var(--text); }
+
+  /* FILTER */
+  .filter-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:26px; align-items:center; }
+  .filter-label { font-size:12px; color:var(--text-secondary); margin-right:4px; }
+  .chip {
+    font-family:inherit; font-size:12px; font-weight:600; padding:5px 11px; border-radius:20px;
+    border:1px solid var(--border); background:#fff; color:var(--text-secondary); cursor:pointer; transition:all .15s;
+  }
+  .chip:hover { border-color:var(--accent); color:var(--accent); }
+  .chip.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .chip-count { font-size:12px; color:var(--text-secondary); margin-left:auto; }
+
+  /* SECTIONS */
+  .section { margin-bottom:34px; }
+  .section-header { display:flex; align-items:center; gap:11px; margin-bottom:14px; }
+  .section-dot { width:11px; height:11px; border-radius:50%; flex:0 0 auto; }
+  .section-title { font-size:17px; font-weight:600; letter-spacing:.2px; }
+  .section-meta { font-size:12px; color:var(--text-secondary); margin-left:auto; }
+
+  /* TIMELINE */
+  .cards-container {
+    display:flex; flex-direction:column; gap:10px; min-height:14px; border-radius:12px;
+    position:relative; padding-left:26px;
+  }
+  .cards-container::before {
+    content:''; position:absolute; left:8px; top:6px; bottom:6px; width:2px;
+    background:var(--line); border-radius:2px;
+  }
+  .section[data-section="jurist"] .cards-container { padding-left:0; }
+  .section[data-section="jurist"] .cards-container::before { display:none; }
+  .cards-container.drag-over-empty { background:rgba(176,138,204,0.07); outline:2px dashed rgba(176,138,204,0.4); outline-offset:3px; }
+
+  .card {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:13px 15px; transition:box-shadow .18s, opacity .2s, border-color .18s; position:relative;
+  }
+  .card::before {
+    content:''; position:absolute; left:-23px; top:18px; width:12px; height:12px; border-radius:50%;
+    background:var(--dot, var(--accent)); border:2px solid #fdfcfe; box-shadow:0 0 0 1.5px var(--dot, var(--accent));
+  }
+  .section[data-section="jurist"] .card::before { display:none; }
+  .card:hover { box-shadow:0 3px 14px rgba(150,120,180,0.09); }
+  .card.dragging { opacity:.4; }
+  .card.drag-over { border-color:var(--accent); box-shadow:0 -2px 0 var(--accent) inset; }
+  .card.hidden { display:none; }
+
+  .card-top { display:flex; gap:10px; align-items:flex-start; }
+
+  .drag-handle { display:flex; flex-direction:column; gap:2.5px; padding:6px 3px; cursor:grab; flex:0 0 auto; opacity:.35; }
+  .drag-handle:active { cursor:grabbing; }
+  .card:hover .drag-handle { opacity:.7; }
+  .drag-handle span { display:block; width:12px; height:1.6px; background:#a596b8; border-radius:2px; }
+
+  .card-content { flex:1; min-width:0; }
+  .card-date { font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.6px; color:var(--text-secondary); margin-bottom:3px; }
+  .card-title { font-size:14.5px; font-weight:600; line-height:1.35; }
+  .card-desc { font-size:13px; color:#6d6280; margin-top:4px; line-height:1.5; white-space:pre-wrap; }
+  .card-foot { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:7px; }
+  .card-who {
+    display:inline-block; font-size:11px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.5px; padding:3px 9px; border-radius:20px;
+    background:rgba(176,138,204,0.11); color:#8a6aa8;
+  }
+  .card-source { font-size:11.5px; color:var(--text-secondary); font-style:italic; }
+
+  .who-mikael   { background:rgba(212,118,111,0.14); color:#a8544d; }
+  .who-johanna  { background:rgba(212,137,158,0.16); color:#a8546b; }
+  .who-ingmarie { background:rgba(212,168,137,0.18); color:#9a6a44; }
+  .who-hakan    { background:rgba(137,168,212,0.16); color:#4f6f9e; }
+  .who-marzena  { background:rgba(176,138,204,0.14); color:#8a6aa8; }
+  .who-janne    { background:rgba(137,184,168,0.18); color:#3f7a66; }
+  .who-asa      { background:rgba(137,184,168,0.18); color:#3f7a66; }
+  .who-juridik  { background:rgba(45,36,64,0.08); color:#4a4060; }
+  .who-myndighet{ background:rgba(45,36,64,0.08); color:#4a4060; }
+
+  .card-actions { display:flex; align-items:center; gap:9px; flex:0 0 auto; opacity:0; transition:opacity .15s; }
+  .card:hover .card-actions { opacity:1; }
+  .card-edit-hint { font-size:11.5px; color:var(--text-secondary); cursor:pointer; }
+  .card-edit-hint:hover { color:var(--accent); }
+  .card-delete { background:none; border:none; cursor:pointer; padding:2px; line-height:0; }
+  .card-delete svg { width:15px; height:15px; }
+
+  /* INFO CARDS (Juristen) */
+  .card.info-card { background:linear-gradient(180deg,#fbfdfc,#f6faf8); border-color:rgba(137,184,168,0.36); }
+  .card.info-card .card-title { color:#3f7a66; }
+  .card.info-card.warn { background:linear-gradient(180deg,#fffbfa,#fef6f4); border-color:rgba(212,137,158,0.4); }
+  .card.info-card.warn .card-title { color:#a8546b; }
+
+  /* EDIT */
+  .card.editing { border-color:var(--accent); box-shadow:0 3px 16px rgba(150,120,180,0.13); }
+  .edit-date, .edit-title, .edit-desc, .edit-source {
+    width:100%; font-family:inherit; border:1px solid var(--border); border-radius:9px;
+    padding:8px 10px; font-size:14px; color:var(--text); background:#fff; margin-bottom:7px;
+  }
+  .edit-date { font-size:12px; text-transform:uppercase; letter-spacing:.4px; font-weight:600; }
+  .edit-title { font-weight:600; }
+  .edit-desc { resize:vertical; min-height:72px; font-size:13px; line-height:1.5; }
+  .edit-source { font-size:12px; }
+  .edit-date:focus, .edit-title:focus, .edit-desc:focus, .edit-source:focus { outline:none; border-color:var(--accent); }
+  .pickers { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:9px; font-size:12px; color:var(--text-secondary); align-items:center; }
+  .pickers label { display:flex; align-items:center; gap:6px; }
+  .pickers select { font-family:inherit; font-size:12px; padding:5px 8px; border-radius:8px; border:1px solid var(--border); background:#fff; color:var(--text); }
+  .edit-actions { display:flex; gap:7px; }
+  .edit-actions button { font-family:inherit; font-size:12.5px; font-weight:600; padding:7px 14px; border-radius:9px; border:none; cursor:pointer; }
+  .btn-save { background:var(--accent); color:#fff; }
+  .btn-save:hover { background:var(--accent-hover); }
+  .btn-cancel { background:rgba(200,180,210,0.2); color:var(--text-secondary); }
+  .btn-delete { background:rgba(212,137,158,0.14); color:#b4667e; margin-left:auto; }
+
+  .add-card-btn {
+    width:100%; margin-top:9px; padding:10px; background:none; cursor:pointer;
+    border:1.4px dashed rgba(200,180,210,0.55); border-radius:12px;
+    color:var(--text-secondary); font-family:inherit; font-size:13px; transition:all .15s;
+  }
+  .add-card-btn:hover { border-color:var(--accent); color:var(--accent); background:rgba(176,138,204,0.04); }
+
+  .loading { text-align:center; padding:50px 0; color:var(--text-secondary); font-size:14px; }
+  footer { text-align:center; padding:34px 20px 10px; color:var(--text-secondary); font-size:12px; }
+
+  @media (max-width:700px) {
+    .hero h1 { font-size:38px; }
+    .hero { padding:32px 16px 18px; }
+    .card-actions { opacity:1; }
+    .card-desc { font-size:12.5px; }
+    .cards-container { padding-left:20px; }
+    .cards-container::before { left:5px; }
+    .card::before { left:-20px; width:10px; height:10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="/">‹ Mitt Privata</a>
+  <a href="/plan-hakan.html">Håkans flytt — plan ›</a>
+</div>
+
+<div class="hero">
+  <h1>Mikael härvan</h1>
+  <p>Tidslinje · varje händelse för sig, i den ordning det hände</p>
+</div>
+
+<div class="container">
+
+  <div class="intro">
+    Varje händelse är ett eget kort. <strong>Dra</strong> i handtaget för att flytta om, <strong>redigera</strong> för att ändra text, datum, vem eller period, och <strong>lägg till</strong> nya händelser längst ner i varje period.
+    Längst ner finns <strong>Juristens noteringar</strong>. Allt sparas direkt.
+  </div>
+
+  <div class="filter-row" id="filterRow">
+    <span class="filter-label">Visa:</span>
+    <button class="chip active" data-who="">Alla</button>
+    <button class="chip" data-who="Mikael">Mikael</button>
+    <button class="chip" data-who="Johanna">Johanna</button>
+    <button class="chip" data-who="Ingmarie">Ingmarie</button>
+    <button class="chip" data-who="Håkan">Håkan</button>
+    <button class="chip" data-who="Marzena">Marzena</button>
+    <button class="chip" data-who="Janne">Janne</button>
+    <button class="chip" data-who="Juridik">Juridik</button>
+    <button class="chip" data-who="Myndighet">Myndighet</button>
+    <span class="chip-count" id="chipCount"></span>
+  </div>
+
+  <div id="sections-root"><div class="loading">Hämtar tidslinjen…</div></div>
+
+</div>
+
+<footer>Sparas säkert i molnet (Supabase)</footer>
+
+<script>
+  const SB_URL = 'https://dxixbtxywsvshthtiwgo.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR4aXhidHh5d3N2c2h0aHRpd2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NjE1MzgsImV4cCI6MjA4ODIzNzUzOH0.87q-gad0BtcRcYHKpsKNqoJ8wTo-8jLPUizGomLboB4';
+  const TABLE = 'mikael_harvan_events';
+
+  const DELETE_SVG = '<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="4.5" y1="4.5" x2="11.5" y2="11.5" stroke="#c4b8d4" stroke-width="1.3" stroke-linecap="round"/><line x1="11.5" y1="4.5" x2="4.5" y2="11.5" stroke="#c4b8d4" stroke-width="1.3" stroke-linecap="round"/></svg>';
+  const DRAG_SVG = '<span></span><span></span><span></span>';
+
+  const SECTIONS = [
+    { key:'bakgrund', color:'var(--peach)',    title:'Bakgrund, före 2020' },
+    { key:'ar2020',   color:'var(--sky)',      title:'2020 till 2023' },
+    { key:'ar2024',   color:'var(--lavender)', title:'2024 till 2025' },
+    { key:'var2026',  color:'var(--rose)',     title:'2026, våren och sommaren' },
+    { key:'host2026', color:'var(--coral)',    title:'Hösten 2026, härvan' },
+    { key:'jurist',   color:'var(--mint)',     title:'Juristens noteringar', info:true }
+  ];
+  const WHOS = ['', 'Mikael', 'Johanna', 'Ingmarie', 'Håkan', 'Marzena', 'Janne', 'Åsa', 'Juridik', 'Myndighet'];
+  const WHO_CLASS = { 'Mikael':'who-mikael','Johanna':'who-johanna','Ingmarie':'who-ingmarie','Håkan':'who-hakan','Marzena':'who-marzena','Janne':'who-janne','Åsa':'who-asa','Juridik':'who-juridik','Myndighet':'who-myndighet' };
+  const WHO_DOT = { 'Mikael':'var(--coral)','Johanna':'var(--rose)','Ingmarie':'var(--peach)','Håkan':'var(--sky)','Marzena':'var(--lavender)','Janne':'var(--mint)','Åsa':'var(--mint)','Juridik':'#6a5f80','Myndighet':'#6a5f80' };
+
+  // --- Supabase ---
+  async function sbFetch(path, opts = {}) {
+    const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
+      ...opts,
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: opts.prefer || 'return=representation', ...opts.headers }
+    });
+    if (!res.ok) { console.error('Supabase error', res.status, await res.text()); return null; }
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
+  }
+  const loadCards  = ()     => sbFetch(`${TABLE}?select=*&order=section,sort_order`);
+  const insertCard = (data) => sbFetch(TABLE, { method:'POST', body: JSON.stringify(data) });
+  const deleteCard = (id)   => sbFetch(`${TABLE}?id=eq.${encodeURIComponent(id)}`, { method:'DELETE' });
+  function updateCard(id, data) {
+    data.updated_at = new Date().toISOString();
+    return sbFetch(`${TABLE}?id=eq.${encodeURIComponent(id)}`, { method:'PATCH', body: JSON.stringify(data) });
+  }
+
+  let allCards = [];
+  let activeWho = '';
+
+  const escapeHtml = s => { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; };
+  const escapeAttr = s => (s == null ? '' : String(s)).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+  function isWarn(d) { return (d.title || '').toUpperCase().startsWith('VARNING'); }
+
+  function cardClass(d) {
+    let c = 'card';
+    if (d.is_info_card) { c += ' info-card'; if (isWarn(d)) c += ' warn'; }
+    if (activeWho && (d.who || '') !== activeWho && !d.is_info_card) c += ' hidden';
+    return c;
+  }
+
+  function renderCardHTML(d) {
+    const date  = d.date_label ? `<div class="card-date">${escapeHtml(d.date_label)}</div>` : '';
+    const who   = d.who ? `<span class="card-who ${WHO_CLASS[d.who] || ''}">${escapeHtml(d.who)}</span>` : '';
+    const src   = d.source ? `<span class="card-source">${escapeHtml(d.source)}</span>` : '';
+    const foot  = (who || src) ? `<div class="card-foot">${who}${src}</div>` : '';
+    const desc  = d.description ? `<div class="card-desc">${escapeHtml(d.description)}</div>` : '';
+    return `<div class="card-top">
+      <div class="drag-handle" draggable="true">${DRAG_SVG}</div>
+      <div class="card-content">
+        ${date}<div class="card-title">${escapeHtml(d.title)}</div>${desc}${foot}
+      </div>
+      <div class="card-actions">
+        <span class="card-edit-hint" onclick="event.stopPropagation(); editCard('${escapeAttr(d.id)}')">redigera</span>
+        <button class="card-delete" onclick="event.stopPropagation(); removeCard('${escapeAttr(d.id)}')" title="Ta bort">${DELETE_SVG}</button>
+      </div></div>`;
+  }
+
+  function applyDot(card, d) {
+    card.style.setProperty('--dot', WHO_DOT[d.who] || 'var(--accent)');
+  }
+
+  function renderAll(cards) {
+    allCards = cards;
+    const root = document.getElementById('sections-root');
+    root.innerHTML = '';
+
+    SECTIONS.forEach(sec => {
+      const secCards = cards.filter(c => c.section === sec.key).sort((a,b) => a.sort_order - b.sort_order);
+      const el = document.createElement('div');
+      el.className = 'section';
+      el.dataset.section = sec.key;
+      el.innerHTML = `<div class="section-header">
+          <div class="section-dot" style="background:${sec.color}"></div>
+          <span class="section-title">${sec.title}</span>
+          <span class="section-meta"></span>
+        </div>
+        <div class="cards-container"></div>
+        <button class="add-card-btn" onclick="showAddForm(this,'${sec.key}')">+ ${sec.info ? 'Lägg till notering' : 'Lägg till händelse'}</button>`;
+
+      const container = el.querySelector('.cards-container');
+      secCards.forEach(d => {
+        const card = document.createElement('div');
+        card.className = cardClass(d);
+        card.dataset.id = d.id;
+        card.innerHTML = renderCardHTML(d);
+        applyDot(card, d);
+        container.appendChild(card);
+        initDragForCard(card);
+      });
+      root.appendChild(el);
+    });
+
+    initContainerDrop();
+    refreshSectionMeta();
+  }
+
+  function refreshSectionMeta() {
+    let visible = 0;
+    SECTIONS.forEach(sec => {
+      const el = document.querySelector(`.section[data-section="${sec.key}"] .section-meta`);
+      if (!el) return;
+      const secCards = allCards.filter(c => c.section === sec.key);
+      const shown = secCards.filter(c => c.is_info_card || !activeWho || (c.who || '') === activeWho).length;
+      visible += shown;
+      el.textContent = sec.info ? secCards.length + ' noteringar' : (activeWho ? `${shown} av ${secCards.length}` : secCards.length + ' händelser');
+    });
+    document.getElementById('chipCount').textContent = activeWho ? `${visible} kort visas` : `${allCards.length} kort`;
+  }
+
+  // --- Filter ---
+  document.getElementById('filterRow').addEventListener('click', e => {
+    const btn = e.target.closest('.chip'); if (!btn) return;
+    activeWho = btn.dataset.who || '';
+    document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === btn));
+    allCards.forEach(d => {
+      const card = document.querySelector(`.card[data-id="${d.id}"]`);
+      if (card && !card.classList.contains('editing')) card.className = cardClass(d);
+    });
+    refreshSectionMeta();
+  });
+
+  // --- Redigera ---
+  function pickersHTML(d) {
+    const secOpts = SECTIONS.map(s => `<option value="${s.key}"${s.key === d.section ? ' selected' : ''}>${s.title}</option>`).join('');
+    const whoOpts = WHOS.map(w => `<option value="${escapeAttr(w)}"${w === (d.who || '') ? ' selected' : ''}>${w || 'Ingen'}</option>`).join('');
+    return `<div class="pickers">
+      <label>Vem: <select class="pick-who">${whoOpts}</select></label>
+      <label>Period: <select class="pick-section">${secOpts}</select></label>
+    </div>`;
+  }
+
+  function editCard(id) {
+    const d = allCards.find(c => c.id === id);
+    const card = document.querySelector(`.card[data-id="${id}"]`);
+    if (!d || !card || card.classList.contains('editing')) return;
+
+    card.className = 'card editing';
+    card.innerHTML = `<div class="card-content">
+      <input class="edit-date" type="text" placeholder="När (t.ex. 10 okt 2026)" value="${escapeAttr(d.date_label || '')}">
+      <input class="edit-title" type="text" placeholder="Vad hände?" value="${escapeAttr(d.title)}">
+      <textarea class="edit-desc" placeholder="Detaljer">${escapeHtml(d.description || '')}</textarea>
+      <input class="edit-source" type="text" placeholder="Källa (t.ex. mejl 10 okt, samtal, polisanmälan)" value="${escapeAttr(d.source || '')}">
+      ${pickersHTML(d)}
+      <div class="edit-actions">
+        <button class="btn-save" onclick="saveEdit('${escapeAttr(id)}')">Spara</button>
+        <button class="btn-cancel" onclick="cancelEdit('${escapeAttr(id)}')">Avbryt</button>
+        <button class="btn-delete" onclick="removeCard('${escapeAttr(id)}')">Ta bort</button>
+      </div></div>`;
+    card.querySelector('.edit-title').focus();
+    card.querySelectorAll('.edit-date, .edit-title, .edit-source').forEach(inp => inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); saveEdit(id); }
+      if (e.key === 'Escape') cancelEdit(id);
+    }));
+  }
+
+  async function saveEdit(id) {
+    const card = document.querySelector(`.card[data-id="${id}"]`);
+    const d = allCards.find(c => c.id === id);
+    const title = card.querySelector('.edit-title').value.trim();
+    if (!title) { card.querySelector('.edit-title').focus(); return; }
+
+    const oldSection = d.section;
+    d.title = title;
+    d.date_label = card.querySelector('.edit-date').value.trim();
+    d.description = card.querySelector('.edit-desc').value.trim();
+    d.source = card.querySelector('.edit-source').value.trim();
+    d.who = card.querySelector('.pick-who').value;
+    d.section = card.querySelector('.pick-section').value;
+    d.is_info_card = d.section === 'jurist';
+
+    card.className = cardClass(d);
+    card.innerHTML = renderCardHTML(d);
+    applyDot(card, d);
+    initDragForCard(card);
+
+    await updateCard(id, { title: d.title, date_label: d.date_label, description: d.description, source: d.source, who: d.who, section: d.section, is_info_card: d.is_info_card });
+
+    if (d.section !== oldSection) {
+      document.querySelector(`.section[data-section="${d.section}"] .cards-container`).appendChild(card);
+      await saveCurrentOrder();
+    }
+    refreshSectionMeta();
+  }
+
+  function cancelEdit(id) {
+    const d = allCards.find(c => c.id === id);
+    const card = document.querySelector(`.card[data-id="${id}"]`);
+    card.className = cardClass(d);
+    card.innerHTML = renderCardHTML(d);
+    applyDot(card, d);
+    initDragForCard(card);
+  }
+
+  async function removeCard(id) {
+    const card = document.querySelector(`.card[data-id="${id}"]`);
+    if (!card) return;
+    if (!confirm('Ta bort händelsen? Det går inte att ångra.')) return;
+    card.style.transition = 'opacity .25s, transform .25s';
+    card.style.opacity = '0'; card.style.transform = 'translateX(18px)';
+    setTimeout(() => card.remove(), 250);
+    allCards = allCards.filter(c => c.id !== id);
+    refreshSectionMeta();
+    await deleteCard(id);
+  }
+
+  // --- Lägg till ---
+  function showAddForm(btn, section) {
+    const container = btn.closest('.section').querySelector('.cards-container');
+    if (container.lastElementChild && container.lastElementChild.classList.contains('editing')) return;
+
+    const card = document.createElement('div');
+    card.className = 'card editing';
+    card.innerHTML = `<div class="card-content">
+      <input class="edit-date" type="text" placeholder="När (t.ex. 10 okt 2026)">
+      <input class="edit-title" type="text" placeholder="Vad hände?">
+      <textarea class="edit-desc" placeholder="Detaljer (valfritt)"></textarea>
+      <input class="edit-source" type="text" placeholder="Källa (valfritt)">
+      ${pickersHTML({ section, who:'' })}
+      <div class="edit-actions">
+        <button class="btn-save" onclick="saveNew(this)">Spara</button>
+        <button class="btn-cancel" onclick="this.closest('.card').remove()">Avbryt</button>
+      </div></div>`;
+    container.appendChild(card);
+    card.querySelector('.edit-date').focus();
+    card.querySelectorAll('.edit-date, .edit-title, .edit-source').forEach(inp => inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); saveNew(card.querySelector('.btn-save')); }
+      if (e.key === 'Escape') card.remove();
+    }));
+  }
+
+  async function saveNew(btn) {
+    const card = btn.closest('.card');
+    const title = card.querySelector('.edit-title').value.trim();
+    if (!title) { card.querySelector('.edit-title').focus(); return; }
+
+    const section = card.querySelector('.pick-section').value;
+    const secCards = allCards.filter(c => c.section === section);
+    const d = {
+      id: 'ev-' + Date.now(),
+      title,
+      date_label: card.querySelector('.edit-date').value.trim(),
+      description: card.querySelector('.edit-desc').value.trim(),
+      source: card.querySelector('.edit-source').value.trim(),
+      who: card.querySelector('.pick-who').value,
+      section,
+      is_info_card: section === 'jurist',
+      sort_order: secCards.length ? Math.max(...secCards.map(c => c.sort_order)) + 1 : 0
+    };
+    await insertCard(d);
+    allCards.push(d);
+
+    card.className = cardClass(d);
+    card.dataset.id = d.id;
+    card.innerHTML = renderCardHTML(d);
+    applyDot(card, d);
+    initDragForCard(card);
+    const target = document.querySelector(`.section[data-section="${section}"] .cards-container`);
+    if (target && card.parentElement !== target) { target.appendChild(card); await saveCurrentOrder(); }
+    refreshSectionMeta();
+  }
+
+  // --- Dra och släpp ---
+  let draggedCard = null;
+
+  function initDragForCard(card) {
+    const handle = card.querySelector('.drag-handle');
+    if (!handle) return;
+    handle.addEventListener('dragstart', e => {
+      e.stopPropagation();
+      draggedCard = card; card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', card.dataset.id);
+    });
+    handle.addEventListener('dragend', () => {
+      if (draggedCard) draggedCard.classList.remove('dragging');
+      draggedCard = null;
+      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      document.querySelectorAll('.drag-over-empty').forEach(el => el.classList.remove('drag-over-empty'));
+    });
+    card.addEventListener('dragover', e => {
+      e.preventDefault(); e.stopPropagation();
+      if (!draggedCard || draggedCard === card) return;
+      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      card.classList.add('drag-over');
+    });
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+    card.addEventListener('drop', e => {
+      e.preventDefault(); e.stopPropagation();
+      card.classList.remove('drag-over');
+      if (!draggedCard || draggedCard === card) return;
+      card.closest('.cards-container').insertBefore(draggedCard, card);
+      draggedCard.classList.remove('dragging');
+      saveCurrentOrder(); draggedCard = null;
+    });
+  }
+
+  function initContainerDrop() {
+    document.querySelectorAll('.cards-container').forEach(container => {
+      container.addEventListener('dragover', e => {
+        e.preventDefault();
+        if (!draggedCard) return;
+        if (container.querySelectorAll('.card:not(.dragging)').length === 0) container.classList.add('drag-over-empty');
+      });
+      container.addEventListener('dragleave', () => container.classList.remove('drag-over-empty'));
+      container.addEventListener('drop', e => {
+        e.preventDefault();
+        container.classList.remove('drag-over-empty');
+        if (!draggedCard) return;
+        if (e.target === container || e.target.closest('.cards-container') === container) {
+          container.appendChild(draggedCard);
+          draggedCard.classList.remove('dragging');
+          saveCurrentOrder(); draggedCard = null;
+        }
+      });
+    });
+  }
+
+  async function saveCurrentOrder() {
+    const updates = [];
+    document.querySelectorAll('.section').forEach(section => {
+      const key = section.dataset.section;
+      let order = 0;
+      section.querySelectorAll('.cards-container .card[data-id]').forEach(card => {
+        const id = card.dataset.id;
+        const c = allCards.find(x => x.id === id);
+        if (c) {
+          const changed = c.section !== key || c.sort_order !== order;
+          c.section = key; c.sort_order = order;
+          c.is_info_card = key === 'jurist';
+          if (changed) { card.className = cardClass(c); }
+          updates.push({ id, section: key, sort_order: order, is_info_card: c.is_info_card });
+        }
+        order++;
+      });
+    });
+    refreshSectionMeta();
+    await Promise.all(updates.map(u => updateCard(u.id, { section: u.section, sort_order: u.sort_order, is_info_card: u.is_info_card })));
+  }
+
+  // --- Start ---
+  (async () => {
+    const cards = await loadCards();
+    if (!cards) {
+      document.getElementById('sections-root').innerHTML =
+        '<div class="loading">Kunde inte hämta tidslinjen. Ladda om sidan.</div>';
+      return;
+    }
+    renderAll(cards);
+  })();
+</script>
+
+</body>
+</html>
