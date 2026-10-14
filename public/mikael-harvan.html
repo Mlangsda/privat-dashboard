@@ -78,8 +78,8 @@
     content:''; position:absolute; left:8px; top:6px; bottom:6px; width:2px;
     background:var(--line); border-radius:2px;
   }
-  .section[data-section="jurist"] .cards-container { padding-left:0; }
-  .section[data-section="jurist"] .cards-container::before { display:none; }
+  .section.info-section .cards-container { padding-left:0; }
+  .section.info-section .cards-container::before { display:none; }
   .cards-container.drag-over-empty { background:rgba(176,138,204,0.07); outline:2px dashed rgba(176,138,204,0.4); outline-offset:3px; }
 
   .card {
@@ -90,7 +90,7 @@
     content:''; position:absolute; left:-23px; top:18px; width:12px; height:12px; border-radius:50%;
     background:var(--dot, var(--accent)); border:2px solid #fdfcfe; box-shadow:0 0 0 1.5px var(--dot, var(--accent));
   }
-  .section[data-section="jurist"] .card::before { display:none; }
+  .section.info-section .card::before { display:none; }
   .card:hover { box-shadow:0 3px 14px rgba(150,120,180,0.09); }
   .card.dragging { opacity:.4; }
   .card.drag-over { border-color:var(--accent); box-shadow:0 -2px 0 var(--accent) inset; }
@@ -122,6 +122,9 @@
   .who-marzena  { background:rgba(176,138,204,0.14); color:#8a6aa8; }
   .who-janne    { background:rgba(137,184,168,0.18); color:#3f7a66; }
   .who-asa      { background:rgba(137,184,168,0.18); color:#3f7a66; }
+  .who-elinor   { background:rgba(212,168,137,0.18); color:#9a6a44; }
+  .who-linda    { background:rgba(212,168,137,0.18); color:#9a6a44; }
+  .who-lasse    { background:rgba(137,168,212,0.16); color:#4f6f9e; }
   .who-juridik  { background:rgba(45,36,64,0.08); color:#4a4060; }
   .who-myndighet{ background:rgba(45,36,64,0.08); color:#4a4060; }
 
@@ -129,6 +132,13 @@
   .card:hover .card-actions { opacity:1; }
   .card-edit-hint { font-size:11.5px; color:var(--text-secondary); cursor:pointer; }
   .card-edit-hint:hover { color:var(--accent); }
+  .card-add-after {
+    font-family:inherit; font-size:11.5px; font-weight:600; color:var(--accent); background:none;
+    border:1px solid rgba(176,138,204,0.45); border-radius:20px; padding:3px 9px; cursor:pointer; min-height:24px; white-space:nowrap;
+  }
+  .card-add-after:hover { background:rgba(176,138,204,0.1); border-color:var(--accent); }
+  .card.flash { animation: flash 1.6s ease-out; }
+  @keyframes flash { 0% { border-color:var(--accent); box-shadow:0 0 0 3px rgba(176,138,204,0.35); } 100% { border-color:var(--border); box-shadow:none; } }
   .card-delete { background:none; border:none; cursor:pointer; padding:2px; line-height:0; }
   .card-delete svg { width:15px; height:15px; }
 
@@ -172,7 +182,9 @@
   @media (max-width:700px) {
     .hero h1 { font-size:38px; }
     .hero { padding:32px 16px 18px; }
-    .card-actions { opacity:1; }
+    .card-actions { opacity:1; flex-wrap:wrap; justify-content:flex-end; gap:6px; }
+    .card-add-after { min-height:32px; padding:5px 11px; }
+    .card-edit-hint { padding:6px 4px; }
     .card-desc { font-size:12.5px; }
     .cards-container { padding-left:20px; }
     .cards-container::before { left:5px; }
@@ -195,8 +207,8 @@
 <div class="container">
 
   <div class="intro">
-    Varje händelse är ett eget kort. <strong>Dra</strong> i handtaget för att flytta om, <strong>redigera</strong> för att ändra text, datum, vem eller period, och <strong>lägg till</strong> nya händelser längst ner i varje period.
-    Längst ner finns <strong>Juristens noteringar</strong>. Allt sparas direkt.
+    Varje händelse är ett eget kort. <strong>Dra</strong> i handtaget för att flytta om, <strong>redigera</strong> för att ändra text, datum, vem eller period, och <strong>lägg till</strong> en ny händelse direkt där du står med <strong>+ lägg till efter</strong> på kortet ovanför. Den knapp som finns längst ner i varje period finns kvar.
+    Längst ner finns <strong>Juristens noteringar</strong> och <strong>Egna insikter</strong>. Allt sparas direkt.
   </div>
 
   <div class="filter-row" id="filterRow">
@@ -208,6 +220,10 @@
     <button class="chip" data-who="Håkan">Håkan</button>
     <button class="chip" data-who="Marzena">Marzena</button>
     <button class="chip" data-who="Janne">Janne</button>
+    <button class="chip" data-who="Åsa">Åsa</button>
+    <button class="chip" data-who="Elinor">Elinor</button>
+    <button class="chip" data-who="Linda">Linda</button>
+    <button class="chip" data-who="Lasse">Lasse</button>
     <button class="chip" data-who="Juridik">Juridik</button>
     <button class="chip" data-who="Myndighet">Myndighet</button>
     <span class="chip-count" id="chipCount"></span>
@@ -233,11 +249,14 @@
     { key:'ar2024',   color:'var(--lavender)', title:'2024 till 2025' },
     { key:'var2026',  color:'var(--rose)',     title:'2026, våren och sommaren' },
     { key:'host2026', color:'var(--coral)',    title:'Hösten 2026, härvan' },
-    { key:'jurist',   color:'var(--mint)',     title:'Juristens noteringar', info:true }
+    { key:'jurist',   color:'var(--mint)',     title:'Juristens noteringar', info:true },
+    { key:'insikter', color:'var(--lavender)', title:'Egna insikter', info:true }
   ];
-  const WHOS = ['', 'Mikael', 'Johanna', 'Ingmarie', 'Håkan', 'Marzena', 'Janne', 'Åsa', 'Juridik', 'Myndighet'];
-  const WHO_CLASS = { 'Mikael':'who-mikael','Johanna':'who-johanna','Ingmarie':'who-ingmarie','Håkan':'who-hakan','Marzena':'who-marzena','Janne':'who-janne','Åsa':'who-asa','Juridik':'who-juridik','Myndighet':'who-myndighet' };
-  const WHO_DOT = { 'Mikael':'var(--coral)','Johanna':'var(--rose)','Ingmarie':'var(--peach)','Håkan':'var(--sky)','Marzena':'var(--lavender)','Janne':'var(--mint)','Åsa':'var(--mint)','Juridik':'#6a5f80','Myndighet':'#6a5f80' };
+  const INFO_SECTIONS = SECTIONS.filter(s => s.info).map(s => s.key);
+  const isInfoSection = key => INFO_SECTIONS.includes(key);
+  const WHOS = ['', 'Mikael', 'Johanna', 'Ingmarie', 'Håkan', 'Marzena', 'Janne', 'Åsa', 'Elinor', 'Linda', 'Lasse', 'Juridik', 'Myndighet'];
+  const WHO_CLASS = { 'Mikael':'who-mikael','Johanna':'who-johanna','Ingmarie':'who-ingmarie','Håkan':'who-hakan','Marzena':'who-marzena','Janne':'who-janne','Åsa':'who-asa','Elinor':'who-elinor','Linda':'who-linda','Lasse':'who-lasse','Juridik':'who-juridik','Myndighet':'who-myndighet' };
+  const WHO_DOT = { 'Mikael':'var(--coral)','Johanna':'var(--rose)','Ingmarie':'var(--peach)','Håkan':'var(--sky)','Marzena':'var(--lavender)','Janne':'var(--mint)','Åsa':'var(--mint)','Elinor':'var(--peach)','Linda':'var(--peach)','Lasse':'var(--sky)','Juridik':'#6a5f80','Myndighet':'#6a5f80' };
 
   // --- Supabase ---
   async function sbFetch(path, opts = {}) {
@@ -284,6 +303,7 @@
         ${date}<div class="card-title">${escapeHtml(d.title)}</div>${desc}${foot}
       </div>
       <div class="card-actions">
+        <button class="card-add-after" onclick="event.stopPropagation(); addAfter('${escapeAttr(d.id)}')" title="Lägg till en händelse direkt efter den här">+ lägg till efter</button>
         <span class="card-edit-hint" onclick="event.stopPropagation(); editCard('${escapeAttr(d.id)}')">redigera</span>
         <button class="card-delete" onclick="event.stopPropagation(); removeCard('${escapeAttr(d.id)}')" title="Ta bort">${DELETE_SVG}</button>
       </div></div>`;
@@ -301,7 +321,7 @@
     SECTIONS.forEach(sec => {
       const secCards = cards.filter(c => c.section === sec.key).sort((a,b) => a.sort_order - b.sort_order);
       const el = document.createElement('div');
-      el.className = 'section';
+      el.className = 'section' + (sec.info ? ' info-section' : '');
       el.dataset.section = sec.key;
       el.innerHTML = `<div class="section-header">
           <div class="section-dot" style="background:${sec.color}"></div>
@@ -400,7 +420,7 @@
     d.source = card.querySelector('.edit-source').value.trim();
     d.who = card.querySelector('.pick-who').value;
     d.section = card.querySelector('.pick-section').value;
-    d.is_info_card = d.section === 'jurist';
+    d.is_info_card = isInfoSection(d.section);
 
     card.className = cardClass(d);
     card.innerHTML = renderCardHTML(d);
@@ -438,22 +458,48 @@
   }
 
   // --- Lägg till ---
-  function showAddForm(btn, section) {
-    const container = btn.closest('.section').querySelector('.cards-container');
-    if (container.lastElementChild && container.lastElementChild.classList.contains('editing')) return;
-
+  function buildAddForm(section, who, withSectionPicker) {
     const card = document.createElement('div');
     card.className = 'card editing';
+    card.dataset.section = section;
+    const whoOpts = WHOS.map(w => `<option value="${escapeAttr(w)}"${w === (who || '') ? ' selected' : ''}>${w || 'Ingen'}</option>`).join('');
+    const pickers = withSectionPicker
+      ? pickersHTML({ section, who: who || '' })
+      : `<div class="pickers"><label>Vem: <select class="pick-who">${whoOpts}</select></label><span>Hamnar här, i samma period som kortet ovanför.</span></div>`;
     card.innerHTML = `<div class="card-content">
       <input class="edit-date" type="text" placeholder="När (t.ex. 10 okt 2026)">
       <input class="edit-title" type="text" placeholder="Vad hände?">
       <textarea class="edit-desc" placeholder="Detaljer (valfritt)"></textarea>
       <input class="edit-source" type="text" placeholder="Källa (valfritt)">
-      ${pickersHTML({ section, who:'' })}
+      ${pickers}
       <div class="edit-actions">
         <button class="btn-save" onclick="saveNew(this)">Spara</button>
         <button class="btn-cancel" onclick="this.closest('.card').remove()">Avbryt</button>
       </div></div>`;
+    return card;
+  }
+
+  // Lägg till direkt efter ett visst kort (formuläret öppnas på plats, perioden ärvs)
+  function addAfter(id) {
+    const anchor = document.querySelector(`.card[data-id="${id}"]`);
+    const d = allCards.find(c => c.id === id);
+    if (!anchor || !d) return;
+    if (anchor.nextElementSibling && anchor.nextElementSibling.classList.contains('editing')) { anchor.nextElementSibling.querySelector('.edit-date').focus(); return; }
+    const card = buildAddForm(d.section, d.who, false);
+    anchor.insertAdjacentElement('afterend', card);
+    card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    card.querySelector('.edit-date').focus({ preventScroll: true });
+    card.querySelectorAll('.edit-date, .edit-title, .edit-source').forEach(inp => inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); saveNew(card.querySelector('.btn-save')); }
+      if (e.key === 'Escape') card.remove();
+    }));
+  }
+
+  function showAddForm(btn, section) {
+    const container = btn.closest('.section').querySelector('.cards-container');
+    if (container.lastElementChild && container.lastElementChild.classList.contains('editing')) return;
+
+    const card = buildAddForm(section, '', true);
     container.appendChild(card);
     card.querySelector('.edit-date').focus();
     card.querySelectorAll('.edit-date, .edit-title, .edit-source').forEach(inp => inp.addEventListener('keydown', e => {
@@ -467,7 +513,8 @@
     const title = card.querySelector('.edit-title').value.trim();
     if (!title) { card.querySelector('.edit-title').focus(); return; }
 
-    const section = card.querySelector('.pick-section').value;
+    const sectionPick = card.querySelector('.pick-section');
+    const section = sectionPick ? sectionPick.value : card.dataset.section;
     const secCards = allCards.filter(c => c.section === section);
     const d = {
       id: 'ev-' + Date.now(),
@@ -477,7 +524,7 @@
       source: card.querySelector('.edit-source').value.trim(),
       who: card.querySelector('.pick-who').value,
       section,
-      is_info_card: section === 'jurist',
+      is_info_card: isInfoSection(section),
       sort_order: secCards.length ? Math.max(...secCards.map(c => c.sort_order)) + 1 : 0
     };
     await insertCard(d);
@@ -489,7 +536,10 @@
     applyDot(card, d);
     initDragForCard(card);
     const target = document.querySelector(`.section[data-section="${section}"] .cards-container`);
-    if (target && card.parentElement !== target) { target.appendChild(card); await saveCurrentOrder(); }
+    if (target && card.parentElement !== target) { target.appendChild(card); }
+    // Kortet ligger kvar exakt där det skapades; ordningen i sektionen numreras om från DOM-ordningen.
+    await saveCurrentOrder();
+    card.classList.add('flash'); setTimeout(() => card.classList.remove('flash'), 1700);
     refreshSectionMeta();
   }
 
@@ -560,7 +610,7 @@
         if (c) {
           const changed = c.section !== key || c.sort_order !== order;
           c.section = key; c.sort_order = order;
-          c.is_info_card = key === 'jurist';
+          c.is_info_card = isInfoSection(key);
           if (changed) { card.className = cardClass(c); }
           updates.push({ id, section: key, sort_order: order, is_info_card: c.is_info_card });
         }
