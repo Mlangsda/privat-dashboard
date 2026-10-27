@@ -125,6 +125,8 @@
   .who-elinor   { background:rgba(212,168,137,0.18); color:#9a6a44; }
   .who-linda    { background:rgba(212,168,137,0.18); color:#9a6a44; }
   .who-lasse    { background:rgba(137,168,212,0.16); color:#4f6f9e; }
+  .who-carlmikael { background:rgba(137,184,168,0.18); color:#3f7a66; }
+  .who-bruno    { background:rgba(137,184,168,0.18); color:#3f7a66; }
   .who-juridik  { background:rgba(45,36,64,0.08); color:#4a4060; }
   .who-myndighet{ background:rgba(45,36,64,0.08); color:#4a4060; }
 
@@ -224,6 +226,8 @@
     <button class="chip" data-who="Elinor">Elinor</button>
     <button class="chip" data-who="Linda">Linda</button>
     <button class="chip" data-who="Lasse">Lasse</button>
+    <button class="chip" data-who="Carl Mikael">Carl Mikael</button>
+    <button class="chip" data-who="Bruno">Bruno</button>
     <button class="chip" data-who="Juridik">Juridik</button>
     <button class="chip" data-who="Myndighet">Myndighet</button>
     <span class="chip-count" id="chipCount"></span>
@@ -254,8 +258,8 @@
   ];
   const INFO_SECTIONS = SECTIONS.filter(s => s.info).map(s => s.key);
   const isInfoSection = key => INFO_SECTIONS.includes(key);
-  const WHOS = ['', 'Mikael', 'Johanna', 'Ingmarie', 'Håkan', 'Marzena', 'Janne', 'Åsa', 'Elinor', 'Linda', 'Lasse', 'Juridik', 'Myndighet'];
-  const WHO_CLASS = { 'Mikael':'who-mikael','Johanna':'who-johanna','Ingmarie':'who-ingmarie','Håkan':'who-hakan','Marzena':'who-marzena','Janne':'who-janne','Åsa':'who-asa','Elinor':'who-elinor','Linda':'who-linda','Lasse':'who-lasse','Juridik':'who-juridik','Myndighet':'who-myndighet' };
+  const WHOS = ['', 'Mikael', 'Johanna', 'Ingmarie', 'Håkan', 'Marzena', 'Janne', 'Åsa', 'Elinor', 'Linda', 'Lasse', 'Carl Mikael', 'Bruno', 'Juridik', 'Myndighet'];
+  const WHO_CLASS = { 'Mikael':'who-mikael','Johanna':'who-johanna','Ingmarie':'who-ingmarie','Håkan':'who-hakan','Marzena':'who-marzena','Janne':'who-janne','Åsa':'who-asa','Elinor':'who-elinor','Linda':'who-linda','Lasse':'who-lasse','Carl Mikael':'who-carlmikael','Bruno':'who-bruno','Juridik':'who-juridik','Myndighet':'who-myndighet' };
   const WHO_DOT = { 'Mikael':'var(--coral)','Johanna':'var(--rose)','Ingmarie':'var(--peach)','Håkan':'var(--sky)','Marzena':'var(--lavender)','Janne':'var(--mint)','Åsa':'var(--mint)','Elinor':'var(--peach)','Linda':'var(--peach)','Lasse':'var(--sky)','Juridik':'#6a5f80','Myndighet':'#6a5f80' };
 
   // --- Supabase ---
