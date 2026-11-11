@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Medikinet-dagbok</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Italiana&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --card: #ffffff;
+    --border: rgba(200,180,210,0.32);
+    --text: #2d2440;
+    --text-secondary: #8a7a9e;
+    --accent: #b08acc;
+    --accent-hover: #9a74b8;
+    --lavender: #b08acc;
+    --rose: #d4899e;
+    --peach: #d4a889;
+    --mint: #89b8a8;
+    --sky: #89a8d4;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'SF Pro Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:#fdfcfe; color:var(--text); line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding-bottom:60px;
+  }
+
+  .top-bar {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 22px; font-size:13px; border-bottom:1px solid var(--border); background:#fff;
+    position:sticky; top:0; z-index:20;
+  }
+  .top-bar a { color:var(--accent); text-decoration:none; font-weight:500; }
+  .top-bar a:hover { text-decoration:underline; }
+
+  .hero { text-align:center; padding:48px 20px 22px; }
+  .hero h1 { font-family:'Italiana',serif; font-size:52px; font-weight:400; letter-spacing:1px; line-height:1.05; }
+  .hero p { color:var(--text-secondary); font-size:15px; margin-top:8px; }
+
+  .container { max-width:900px; margin:0 auto; padding:0 18px; }
+
+  .intro {
+    background:#fff; border:1px solid var(--border); border-radius:16px;
+    padding:18px 20px; font-size:14px; color:#5a4f6b; margin-bottom:18px;
+  }
+  .intro strong { color:var(--text); }
+
+  /* SUMMERING */
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:28px; }
+  .stat {
+    background:#fff; border:1px solid var(--border); border-radius:14px; padding:14px 12px; text-align:center;
+  }
+  .stat-value { font-family:'Italiana',serif; font-size:30px; line-height:1.1; }
+  .stat-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:var(--text-secondary); margin-top:4px; }
+
+  /* SECTIONS */
+  .section { margin-bottom:34px; }
+  .section-header { display:flex; align-items:center; gap:11px; margin-bottom:12px; }
+  .section-dot { width:11px; height:11px; border-radius:50%; flex:0 0 auto; }
+  .section-title { font-size:17px; font-weight:600; letter-spacing:.2px; }
+  .section-meta { font-size:12px; color:var(--text-secondary); margin-left:auto; }
+
+  .cards-container { display:flex; flex-direction:column; gap:10px; min-height:14px; }
+
+  .card {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:15px 17px; transition:box-shadow .18s, opacity .2s, border-color .18s;
+  }
+  .card:hover { box-shadow:0 3px 14px rgba(150,120,180,0.09); }
+
+  /* DAGKORT */
+  .day-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .day-nr {
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px;
+    padding:4px 10px; border-radius:20px; background:rgba(176,138,204,0.14); color:#7d5c9c; flex:0 0 auto;
+  }
+  .day-date { font-size:15.5px; font-weight:600; }
+  .day-chip {
+    font-size:12px; padding:3px 10px; border-radius:20px;
+    background:rgba(137,184,168,0.16); color:#3f7a66; font-weight:600; flex:0 0 auto;
+  }
+  .day-chip.time { background:rgba(137,168,212,0.16); color:#4a6a9c; }
+  .card-edit-hint {
+    margin-left:auto; font-size:12.5px; color:var(--accent); cursor:pointer; opacity:.75;
+    background:none; border:none; font-family:inherit; padding:4px 2px;
+  }
+  .card-edit-hint:hover { opacity:1; text-decoration:underline; }
+
+  .scales { display:grid; grid-template-columns:repeat(5,1fr); gap:10px 14px; margin-top:14px; }
+  .scale-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:var(--text-secondary); margin-bottom:5px; }
+  .dots { display:flex; gap:5px; }
+  .dot {
+    width:22px; height:22px; border-radius:50%; border:1.6px solid #c9bcd8; background:#fff;
+    cursor:pointer; padding:0; font-family:inherit; font-size:10.5px; font-weight:600; color:#b3a5c4;
+    display:flex; align-items:center; justify-content:center; transition:all .12s;
+  }
+  .dot:hover { border-color:var(--accent); color:var(--accent); }
+  .dot.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .scale-help { font-size:11.5px; color:var(--text-secondary); margin-top:9px; }
+
+  .day-text { margin-top:13px; }
+  .day-text-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:var(--text-secondary); }
+  .day-text-body { font-size:14px; color:#4d4360; margin-top:3px; line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .day-text.bi .day-text-label { color:#a8546b; }
+  .day-empty { margin-top:13px; font-size:13px; color:var(--text-secondary); cursor:pointer; }
+  .day-empty:hover { color:var(--accent); }
+
+  /* FRÅGEKORT */
+  .q-top { display:flex; gap:10px; align-items:flex-start; }
+  .check {
+    flex:0 0 auto; width:20px; height:20px; border-radius:6px; border:1.6px solid #c9bcd8;
+    background:#fff; cursor:pointer; margin-top:1px; position:relative; transition:all .15s;
+  }
+  .check:hover { border-color:var(--accent); }
+  .check.checked { background:var(--accent); border-color:var(--accent); }
+  .check.checked::after {
+    content:''; position:absolute; left:6.5px; top:3px; width:5px; height:9px;
+    border:solid #fff; border-width:0 2px 2px 0; transform:rotate(45deg);
+  }
+  .q-content { flex:1; min-width:0; }
+  .q-title { font-size:14.5px; font-weight:600; line-height:1.35; overflow-wrap:anywhere; }
+  .q-desc { font-size:13px; color:#6d6280; margin-top:4px; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .card.done { background:#faf9fc; }
+  .card.done .q-title { text-decoration:line-through; color:var(--text-secondary); }
+  .card.done .q-desc { opacity:.55; }
+
+  /* REDIGERA */
+  .card.editing { border-color:var(--accent); box-shadow:0 3px 16px rgba(150,120,180,0.13); }
+  .field-row { display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:9px; margin-bottom:9px; }
+  .field label, .field-full label {
+    display:block; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px;
+    color:var(--text-secondary); margin-bottom:4px;
+  }
+  .field-full { margin-bottom:9px; }
+  .card input[type=text], .card input[type=date], .card input[type=time], .card textarea {
+    width:100%; font-family:inherit; border:1px solid var(--border); border-radius:9px;
+    padding:8px 10px; font-size:14px; color:var(--text); background:#fff;
+  }
+  .card textarea { resize:vertical; min-height:84px; line-height:1.5; }
+  .card input:focus, .card textarea:focus { outline:none; border-color:var(--accent); }
+  .edit-title { font-weight:600; }
+  .edit-actions { display:flex; gap:7px; margin-top:4px; }
+  .edit-actions button { font-family:inherit; font-size:12.5px; font-weight:600; padding:8px 15px; border-radius:9px; border:none; cursor:pointer; }
+  .btn-save { background:var(--accent); color:#fff; }
+  .btn-save:hover { background:var(--accent-hover); }
+  .btn-cancel { background:rgba(200,180,210,0.2); color:var(--text-secondary); }
+  .btn-delete { background:rgba(212,137,158,0.14); color:#b4667e; margin-left:auto; }
+  .btn-delete.armed { background:#c9617c; color:#fff; }
+
+  .add-card-btn {
+    width:100%; padding:11px; background:none; cursor:pointer;
+    border:1.4px dashed rgba(200,180,210,0.55); border-radius:12px;
+    color:var(--text-secondary); font-family:inherit; font-size:13px; transition:all .15s;
+  }
+  .add-card-btn:hover { border-color:var(--accent); color:var(--accent); background:rgba(176,138,204,0.04); }
+  .add-card-btn.top { margin-bottom:10px; }
+  .add-card-btn.bottom { margin-top:10px; }
+
+  .loading { text-align:center; padding:50px 0; color:var(--text-secondary); font-size:14px; }
+  footer { text-align:center; padding:34px 20px 10px; color:var(--text-secondary); font-size:12px; }
+
+  .toast {
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px);
+    background:#a8546b; color:#fff; font-size:13.5px; padding:11px 18px; border-radius:12px;
+    box-shadow:0 6px 22px rgba(45,36,64,0.2); opacity:0; pointer-events:none; transition:all .25s; z-index:50;
+    max-width:calc(100vw - 32px); text-align:center;
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  @media (max-width:700px) {
+    .hero h1 { font-size:38px; }
+    .hero { padding:32px 16px 18px; }
+    .scales { grid-template-columns:repeat(2,1fr); gap:13px 14px; }
+    .dot { width:28px; height:28px; font-size:12px; }
+    .field-row { grid-template-columns:1fr; }
+    .stat-value { font-size:24px; }
+    .stat-label { font-size:10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="/">‹ Mitt Privata</a>
+  <a href="https://mlc-workspace.vercel.app">MLC Workspace ›</a>
+</div>
+
+<div class="hero">
+  <h1>Medikinet-dagbok</h1>
+  <p id="heroSub">Dag för dag</p>
+</div>
+
+<div class="container">
+
+  <div class="intro">
+    Skriv ner hur du mår, <strong>dag för dag</strong>. Tryck på en siffra för att skatta dagen, tryck <strong>redigera</strong> för att skriva.
+    Allt går att ändra eller ta bort i efterhand. Längst ner samlar du det du vill ta upp med läkaren.
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-value" id="statDay">–</div><div class="stat-label">Dag i dag</div></div>
+    <div class="stat"><div class="stat-value" id="statCount">–</div><div class="stat-label">Dagar ifyllda</div></div>
+    <div class="stat"><div class="stat-value" id="statDose">–</div><div class="stat-label">Senaste dos</div></div>
+  </div>
+
+  <div id="root"><div class="loading">Hämtar dagboken…</div></div>
+
+</div>
+
+<footer>Sparas säkert i molnet (Supabase)</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SB_URL = 'https://dxixbtxywsvshthtiwgo.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR4aXhidHh5d3N2c2h0aHRpd2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NjE1MzgsImV4cCI6MjA4ODIzNzUzOH0.87q-gad0BtcRcYHKpsKNqoJ8wTo-8jLPUizGomLboB4';
+  const TABLE = 'medikinet_dagbok';
+
+  const SCALES = [
+    { key:'fokus',  label:'Fokus' },
+    { key:'humor',  label:'Humör' },
+    { key:'energi', label:'Energi' },
+    { key:'somn',   label:'Sömn' },
+    { key:'aptit',  label:'Aptit' }
+  ];
+
+  // --- Supabase ---
+  async function sbFetch(path, opts = {}) {
+    try {
+      const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
+        ...opts,
+        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation', ...opts.headers }
+      });
+      if (!res.ok) { console.error('Supabase error', res.status, await res.text()); return null; }
+      const text = await res.text();
+      return text ? JSON.parse(text) : [];
+    } catch (err) { console.error('Nätverksfel', err); return null; }
+  }
+  const loadRows  = ()     => sbFetch(`${TABLE}?select=*&order=datum.desc.nullslast,sort_order,created_at`);
+  const insertRow = (data) => sbFetch(TABLE, { method:'POST', body: JSON.stringify(data) });
+  const deleteRow = (id)   => sbFetch(`${TABLE}?id=eq.${encodeURIComponent(id)}`, { method:'DELETE' });
+  const updateRow = (id, data) => sbFetch(`${TABLE}?id=eq.${encodeURIComponent(id)}`, {
+    method:'PATCH', body: JSON.stringify({ ...data, updated_at: new Date().toISOString() })
+  });
+
+  let rows = [];
+  const byId = id => rows.find(r => r.id === id);
+  const days = () => rows.filter(r => r.kind === 'dag').sort((a,b) => (b.datum || '').localeCompare(a.datum || '') || (b.created_at || '').localeCompare(a.created_at || ''));
+  const questions = () => rows.filter(r => r.kind === 'fraga').sort((a,b) => a.sort_order - b.sort_order);
+
+  const escapeHtml = s => { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; };
+  const escapeAttr = s => escapeHtml(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+  let toastTimer = null;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 4200);
+  }
+  const SAVE_FAIL = 'Kunde inte spara. Kolla nätet och försök igen.';
+
+  // --- Datum (alltid lokala datumnycklar, aldrig toISOString) ---
+  const pad = n => String(n).padStart(2, '0');
+  const keyOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const todayKey = () => keyOf(new Date());
+  function parseKey(k) { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); }
+  function dayDiff(aKey, bKey) {
+    const [ay, am, ad] = aKey.split('-').map(Number), [by, bm, bd] = bKey.split('-').map(Number);
+    return Math.round((Date.UTC(ay, am - 1, ad) - Date.UTC(by, bm - 1, bd)) / 86400000);
+  }
+  function niceDate(k, withYear) {
+    const s = parseKey(k).toLocaleDateString('sv-SE', { weekday:'long', day:'numeric', month:'long', ...(withYear ? { year:'numeric' } : {}) });
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+  const startKey = () => { const ks = days().map(d => d.datum).filter(Boolean).sort(); return ks[0] || null; };
+  const dayNumber = k => { const s = startKey(); return s && k ? dayDiff(k, s) + 1 : null; };
+  const isFilled = d => SCALES.some(s => d[s.key] != null) || (d.anteckning || '').trim() || (d.biverkningar || '').trim();
+
+  // --- Rendera ---
+  function renderDayInner(d) {
+    const nr = dayNumber(d.datum);
+    const scales = SCALES.map(s => `<div>
+        <div class="scale-label">${s.label}</div>
+        <div class="dots">${[1,2,3,4,5].map(n =>
+          `<button type="button" class="dot${d[s.key] === n ? ' on' : ''}" onclick="setScale('${escapeAttr(d.id)}','${s.key}',${n})" aria-label="${s.label} ${n} av 5">${n}</button>`).join('')}</div>
+      </div>`).join('');
+    const hasText = (d.anteckning || '').trim() || (d.biverkningar || '').trim();
+    const text =
+      ((d.anteckning || '').trim() ? `<div class="day-text"><div class="day-text-label">Hur jag mår</div><div class="day-text-body">${escapeHtml(d.anteckning)}</div></div>` : '') +
+      ((d.biverkningar || '').trim() ? `<div class="day-text bi"><div class="day-text-label">Biverkningar</div><div class="day-text-body">${escapeHtml(d.biverkningar)}</div></div>` : '');
+    return `<div class="day-head">
+        ${nr != null ? `<span class="day-nr">Dag ${nr}</span>` : ''}
+        <span class="day-date">${d.datum ? niceDate(d.datum) : 'Inget datum'}</span>
+        ${(d.dos || '').trim() ? `<span class="day-chip">${escapeHtml(d.dos)}</span>` : ''}
+        ${(d.tid_intag || '').trim() ? `<span class="day-chip time">kl ${escapeHtml(d.tid_intag)}</span>` : ''}
+        <button type="button" class="card-edit-hint" onclick="editDay('${escapeAttr(d.id)}')">redigera</button>
+      </div>
+      <div class="scales">${scales}</div>
+      ${hasText ? text : `<div class="day-empty" onclick="editDay('${escapeAttr(d.id)}')">Inget skrivet än. Tryck här för att skriva hur du mår.</div>`}`;
+  }
+
+  function renderQuestionInner(q) {
+    return `<div class="q-top">
+        <div class="check${q.done ? ' checked' : ''}" onclick="toggleDone('${escapeAttr(q.id)}')"></div>
+        <div class="q-content">
+          <div class="q-title">${escapeHtml(q.title)}</div>
+          ${(q.anteckning || '').trim() ? `<div class="q-desc">${escapeHtml(q.anteckning)}</div>` : ''}
+        </div>
+        <button type="button" class="card-edit-hint" onclick="editQuestion('${escapeAttr(q.id)}')">redigera</button>
+      </div>`;
+  }
+
+  function renderAll() {
+    const root = document.getElementById('root');
+    const ds = days(), qs = questions();
+    root.innerHTML = `
+      <div class="section" id="sec-dag">
+        <div class="section-header">
+          <div class="section-dot" style="background:var(--lavender)"></div>
+          <span class="section-title">Dagbok</span>
+          <span class="section-meta" id="metaDag"></span>
+        </div>
+        <button class="add-card-btn top" onclick="addDay()">+ Lägg till dag</button>
+        <div class="cards-container" id="dayCards"></div>
+        <div class="scale-help">Skattning: 1 = dåligt, 5 = bra. Tryck på samma siffra igen för att ta bort den.</div>
+      </div>
+      <div class="section" id="sec-fraga">
+        <div class="section-header">
+          <div class="section-dot" style="background:var(--mint)"></div>
+          <span class="section-title">Att ta upp med läkaren</span>
+          <span class="section-meta" id="metaFraga"></span>
+        </div>
+        <div class="cards-container" id="qCards"></div>
+        <button class="add-card-btn bottom" onclick="addQuestion()">+ Lägg till</button>
+      </div>`;
+
+    const dc = document.getElementById('dayCards');
+    ds.forEach(d => {
+      const card = document.createElement('div');
+      card.className = 'card'; card.dataset.id = d.id;
+      card.innerHTML = renderDayInner(d);
+      dc.appendChild(card);
+    });
+    const qc = document.getElementById('qCards');
+    qs.forEach(q => {
+      const card = document.createElement('div');
+      card.className = 'card' + (q.done ? ' done' : ''); card.dataset.id = q.id;
+      card.innerHTML = renderQuestionInner(q);
+      qc.appendChild(card);
+    });
+    refreshMeta();
+  }
+
+  function refreshMeta() {
+    const ds = days(), qs = questions();
+    const start = startKey();
+    document.getElementById('heroSub').textContent = start ? `Dag för dag · start ${niceDate(start, true).toLowerCase()}` : 'Dag för dag';
+    const todayNr = start ? dayDiff(todayKey(), start) + 1 : null;
+    document.getElementById('statDay').textContent = todayNr != null && todayNr >= 1 ? todayNr : '–';
+    document.getElementById('statCount').textContent = ds.filter(isFilled).length;
+    const latestDose = (ds.find(d => (d.dos || '').trim()) || {}).dos;
+    document.getElementById('statDose').textContent = latestDose || '–';
+    const md = document.getElementById('metaDag'), mq = document.getElementById('metaFraga');
+    if (md) md.textContent = ds.length === 1 ? '1 dag' : `${ds.length} dagar`;
+    if (mq) mq.textContent = `${qs.filter(q => !q.done).length} kvar`;
+  }
+
+  // --- Skattning ---
+  async function setScale(id, key, n) {
+    const d = byId(id); if (!d) return;
+    const prev = d[key];
+    d[key] = prev === n ? null : n;
+    const card = document.querySelector(`.card[data-id="${id}"]`);
+    if (card && !card.classList.contains('editing')) card.innerHTML = renderDayInner(d);
+    refreshMeta();
+    const res = await updateRow(id, { [key]: d[key] });
+    if (!res) {
+      d[key] = prev;
+      if (card && !card.classList.contains('editing')) card.innerHTML = renderDayInner(d);
+      refreshMeta(); toast(SAVE_FAIL);
+    }
+  }
+
+  // --- Dagar ---
+  function dayFormHTML(d, isNew) {
+    const id = escapeAttr(d.id);
+    return `<div class="field-row">
+        <div class="field"><label>Datum</label><input class="f-datum" type="date" value="${escapeAttr(d.datum || '')}"></div>
+        <div class="field"><label>Dos</label><input class="f-dos" type="text" placeholder="t.ex. 20 mg" value="${escapeAttr(d.dos || '')}"></div>
+        <div class="field"><label>Tog den klockan</label><input class="f-tid" type="time" value="${escapeAttr(d.tid_intag || '')}"></div>
+      </div>
+      <div class="field-full"><label>Hur jag mår</label><textarea class="f-ant" placeholder="Vad märker du i dag? Fokus, lugn, humör, kroppen, kvällen …">${escapeHtml(d.anteckning || '')}</textarea></div>
+      <div class="field-full"><label>Biverkningar</label><textarea class="f-bi" placeholder="Något som känns annorlunda eller besvärligt? (valfritt)">${escapeHtml(d.biverkningar || '')}</textarea></div>
+      <div class="edit-actions">
+        <button class="btn-save" onclick="${isNew ? `saveNewDay('${id}')` : `saveDay('${id}')`}">Spara</button>
+        <button class="btn-cancel" onclick="${isNew ? `this.closest('.card').remove()` : `cancelDay('${id}')`}">Avbryt</button>
+        ${isNew ? '' : `<button class="btn-delete" onclick="removeRow(this,'${id}')">Ta bort dagen</button>`}
+      </div>`;
+  }
+
+  function readDayForm(card) {
+    return {
+      datum: card.querySelector('.f-datum').value || null,
+      dos: card.querySelector('.f-dos').value.trim(),
+      tid_intag: card.querySelector('.f-tid').value,
+      anteckning: card.querySelector('.f-ant').value.trim(),
+      biverkningar: card.querySelector('.f-bi').value.trim()
+    };
+  }
+
+  function editDay(id) {
+    const d = byId(id);
+    const card = document.querySelector(`.card[data-id="${id}"]`);
+    if (!d || !card || card.classList.contains('editing')) return;
+    card.classList.add('editing');
+    card.innerHTML = dayFormHTML(d, false);
+    card.querySelector('.f-ant').focus();
+  }
+
+  function cancelDay(id) {
+    const d = byId(id);
+    const card = document.querySelector(`.card[data-id="${id}"]`);
+    card.classList.remove('editing');
+    card.innerHTML = renderDayInner(d);
+  }
+
+  async function saveDay(id) {
+    const d = byId(id);
+    const card = document.querySelector(`.card[data-id="${id}"]`);
+    const data = readDayForm(card);
+    if (!data.datum) { card.querySelector('.f-datum').focus(); toast('Välj ett datum först.'); return; }
+    const res = await updateRow(id, data);
+    if (!res) { toast(SAVE_FAIL); return; }
+    Object.assign(d, data);
+    renderAll();
+  }
+
+  function addDay() {
+    const dc = document.getElementById('dayCards');
+    if (dc.firstElementChild && dc.firstElementChild.dataset.id === 'new') { dc.firstElementChild.querySelector('.f-ant').focus(); return; }
+    const ds = days();
+    const taken = new Set(ds.map(d => d.datum));
+    let datum = todayKey();
+    if (taken.has(datum)) {
+      const next = parseKey(ds[0].datum); next.setDate(next.getDate() + 1);
+      datum = keyOf(next);
+    }
+    const lastDose = (ds.find(d => (d.dos || '').trim()) || {}).dos || '';
+    const card = document.createElement('div');
+    card.className = 'card editing'; card.dataset.id = 'new';
+    card.innerHTML = dayFormHTML({ id:'new', datum, dos:lastDose }, true);
+    dc.insertBefore(card, dc.firstChild);
+    card.querySelector('.f-ant').focus();
+  }
+
+  async function saveNewDay() {
+    const card = document.querySelector('.card[data-id="new"]');
+    const data = readDayForm(card);
+    if (!data.datum) { card.querySelector('.f-datum').focus(); toast('Välj ett datum först.'); return; }
+    const row = { id: 'dag-' + Date.now(), kind:'dag', ...data };
+    const res = await insertRow(row);
+    if (!res) { toast(SAVE_FAIL); return; }
+    rows.push(res[0] || row);
+    renderAll();
+  }
+
+  // --- Att ta upp med läkaren ---
+  function questionFormHTML(q, isNew) {
+    const id = escapeAttr(q.id);
+    return `<div class="field-full"><input class="edit-title f-title" type="text" placeholder="Vad vill du ta upp?" value="${escapeAttr(q.title || '')}"></div>
+      <div class="field-full"><textarea class="f-ant" placeholder="Detaljer (valfritt)">${escapeHtml(q.anteckning || '')}</textarea></div>
+      <div class="edit-actions">
+        <button class="btn-save" onclick="${isNew ? 'saveNewQuestion()' : `saveQuestion('${id}')`}">Spara</button>
+        <button class="btn-cancel" onclick="${isNew ? `this.closest('.card').remove()` : `cancelQuestion('${id}')`}">Avbryt</button>
+        ${isNew ? '' : `<button class="btn-delete" onclick="removeRow(this,'${id}')">Ta bort</button>`}
+      </div>`;
+  }
+
+  function editQuestion(id) {
+    const q = byId(id);
+    const card = document.querySelector(`.card[data-id="${id}"]`);
+    if (!q || !card || card.classList.contains('editing')) return;
+    card.className = 'card editing';
+    card.innerHTML = questionFormHTML(q, false);
+    card.querySelector('.f-title').focus();
+  }
+
+  function cancelQuestion(id) {
+    const q = byId(id);
+    const card = document.querySelector(`.card[data-id="${id}"]`);
+    card.className = 'card' + (q.done ? ' done' : '');
+    card.innerHTML = renderQuestionInner(q);
+  }
+
+  async function saveQuestion(id) {
+    const q = byId(id);
+    const card = document.querySelector(`.card[data-id="${id}"]`);
+    const title = card.querySelector('.f-title').value.trim();
+    if (!title) { card.querySelector('.f-title').focus(); return; }
+    const data = { title, anteckning: card.querySelector('.f-ant').value.trim() };
+    const res = await updateRow(id, data);
+    if (!res) { toast(SAVE_FAIL); return; }
+    Object.assign(q, data);
+    cancelQuestion(id);
+  }
+
+  function addQuestion() {
+    const qc = document.getElementById('qCards');
+    const existing = qc.querySelector('.card[data-id="newq"]');
+    if (existing) { existing.querySelector('.f-title').focus(); return; }
+    const card = document.createElement('div');
+    card.className = 'card editing'; card.dataset.id = 'newq';
+    card.innerHTML = questionFormHTML({ id:'newq' }, true);
+    qc.appendChild(card);
+    card.querySelector('.f-title').focus();
+  }
+
+  async function saveNewQuestion() {
+    const card = document.querySelector('.card[data-id="newq"]');
+    const title = card.querySelector('.f-title').value.trim();
+    if (!title) { card.querySelector('.f-title').focus(); return; }
+    const qs = questions();
+    const row = {
+      id: 'fraga-' + Date.now(), kind:'fraga', title,
+      anteckning: card.querySelector('.f-ant').value.trim(),
+      done: false,
+      sort_order: qs.length ? Math.max(...qs.map(q => q.sort_order)) + 1 : 0
+    };
+    const res = await insertRow(row);
+    if (!res) { toast(SAVE_FAIL); return; }
+    rows.push(res[0] || row);
+    renderAll();
+  }
+
+  async function toggleDone(id) {
+    const q = byId(id); if (!q) return;
+    q.done = !q.done;
+    cancelQuestion(id); refreshMeta();
+    const res = await updateRow(id, { done: q.done });
+    if (!res) { q.done = !q.done; cancelQuestion(id); refreshMeta(); toast(SAVE_FAIL); }
+  }
+
+  // --- Ta bort (två tryck, så inget försvinner av misstag) ---
+  async function removeRow(btn, id) {
+    if (!btn.classList.contains('armed')) {
+      btn.classList.add('armed'); btn.textContent = 'Säker? Tryck igen';
+      setTimeout(() => { if (btn.isConnected) { btn.classList.remove('armed'); btn.textContent = byId(id) && byId(id).kind === 'dag' ? 'Ta bort dagen' : 'Ta bort'; } }, 4000);
+      return;
+    }
+    const res = await deleteRow(id);
+    if (!res) { toast('Kunde inte ta bort. Försök igen.'); return; }
+    rows = rows.filter(r => r.id !== id);
+    renderAll();
+  }
+
+  // --- Start ---
+  (async () => {
+    const data = await loadRows();
+    if (!data) {
+      document.getElementById('root').innerHTML = '<div class="loading">Kunde inte hämta dagboken. Ladda om sidan.</div>';
+      return;
+    }
+    rows = data;
+    renderAll();
+  })();
+</script>
+
+</body>
+</html>
