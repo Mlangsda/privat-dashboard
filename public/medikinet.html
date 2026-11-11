@@ -559,17 +559,6 @@
     renderAll();
   }
 
-  // --- Dagens kort skapas automatiskt (samma dos som senast) ---
-  async function ensureToday() {
-    const ds = days(), start = startKey(), today = todayKey();
-    if (!start || today <= start || ds.some(d => d.datum === today)) return;
-    const lastDose = (ds.find(d => (d.dos || '').trim()) || {}).dos || '';
-    const row = { id: 'dag-' + today, kind:'dag', datum: today, dos: lastDose };
-    const res = await insertRow(row);
-    if (res && res[0]) rows.push(res[0]);
-    else { const again = await loadRows(); if (again) rows = again; }
-  }
-
   // --- Start ---
   (async () => {
     const data = await loadRows();
@@ -578,7 +567,6 @@
       return;
     }
     rows = data;
-    await ensureToday();
     renderAll();
   })();
 </script>
