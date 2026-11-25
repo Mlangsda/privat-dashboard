@@ -151,6 +151,10 @@
   .btn-cancel { background:rgba(200,180,210,0.2); color:var(--text-secondary); }
   .btn-delete { background:rgba(212,137,158,0.14); color:#b4667e; margin-left:auto; }
   .btn-delete.armed { background:#c9617c; color:#fff; }
+  .btn-save:disabled { opacity:.6; cursor:default; }
+  .save-note { font-size:12.5px; line-height:1.45; color:var(--text-secondary); margin-top:9px; }
+  .save-note:empty { display:none; }
+  .save-note.err { color:#a8546b; font-weight:600; }
 
   .add-card-btn {
     width:100%; padding:11px; background:none; cursor:pointer;
@@ -231,16 +235,21 @@
 
   // --- Supabase ---
   async function sbFetch(path, opts = {}) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 15000);
     try {
       const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
-        ...opts,
+        ...opts, signal: ctrl.signal,
         headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation', ...opts.headers }
       });
       if (!res.ok) { console.error('Supabase error', res.status, await res.text()); return null; }
       const text = await res.text();
       return text ? JSON.parse(text) : [];
     } catch (err) { console.error('Nätverksfel', err); return null; }
+    finally { clearTimeout(timer); }
   }
+  // Sparat räknas bara om databasen faktiskt skickar tillbaka raden
+  const saved = res => Array.isArray(res) && res.length > 0;
   const loadRows  = ()     => sbFetch(`${TABLE}?select=*&order=datum.desc.nullslast,sort_order,created_at`);
   const insertRow = (data) => sbFetch(TABLE, { method:'POST', body: JSON.stringify(data) });
   const deleteRow = (id)   => sbFetch(`${TABLE}?id=eq.${encodeURIComponent(id)}`, { method:'DELETE' });
@@ -264,6 +273,69 @@
     toastTimer = setTimeout(() => el.classList.remove('show'), 4200);
   }
   const SAVE_FAIL = 'Kunde inte spara. Kolla nätet och försök igen.';
+  const SAVE_FAIL_NOTE = 'Inte sparat i dagboken. Texten ligger kvar här som utkast. Kolla nätet och tryck Spara igen.';
+  const DRAFT_NOTE = 'Utkastet är sparat i den här webbläsaren. Tryck Spara för att lägga in det i dagboken.';
+
+  // --- Utkast (skyddsnät i webbläsaren, dagboken sparas alltid i Supabase) ---
+  const DRAFT_KEY = 'medikinet_utkast_v1';
+  function readDrafts() { try { return JSON.parse(localStorage.getItem(DRAFT_KEY)) || {}; } catch { return {}; } }
+  function writeDrafts(d) { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); return true; } catch { return false; } }
+  function setDraft(id, data) { const d = readDrafts(); d[id] = { ...data, ts: Date.now() }; return writeDrafts(d); }
+  function clearDraft(id) { const d = readDrafts(); if (id in d) { delete d[id]; writeDrafts(d); } }
+  function setNote(card, msg, isErr) {
+    const el = card && card.querySelector('.save-note'); if (!el) return;
+    el.textContent = msg || ''; el.classList.toggle('err', !!isErr);
+  }
+  function formDraft(card) {
+    return card.querySelector('.f-datum')
+      ? { kind:'dag', ...readDayForm(card) }
+      : { kind:'fraga', title: card.querySelector('.f-title').value, anteckning: card.querySelector('.f-ant').value };
+  }
+  function fillForm(card, dr) {
+    const set = (sel, v) => { const el = card.querySelector(sel); if (el && v != null) el.value = v; };
+    if (dr.kind === 'dag') { set('.f-datum', dr.datum); set('.f-dos', dr.dos); set('.f-tid', dr.tid_intag); set('.f-ant', dr.anteckning); set('.f-bi', dr.biverkningar); }
+    else { set('.f-title', dr.title); set('.f-ant', dr.anteckning); }
+    card.dataset.dirty = '1';
+    setNote(card, 'Osparat utkast. Tryck Spara för att lägga in det i dagboken.');
+  }
+  function restoreDrafts() {
+    let n = 0;
+    for (const [id, dr] of Object.entries(readDrafts())) {
+      if (id === 'new') addDay(true);
+      else if (id === 'newq') addQuestion(true);
+      else if (byId(id)) { if (dr.kind === 'dag') editDay(id, true); else editQuestion(id, true); }
+      else continue;
+      const card = document.querySelector(`.card[data-id="${id}"]`);
+      if (card && card.classList.contains('editing')) { fillForm(card, dr); n++; }
+    }
+    return n;
+  }
+  document.addEventListener('input', e => {
+    const card = e.target.closest ? e.target.closest('.card.editing') : null;
+    if (!card) return;
+    card.dataset.dirty = '1';
+    const ok = setDraft(card.dataset.id, formDraft(card));
+    setNote(card, ok ? DRAFT_NOTE : 'Tryck Spara innan du lämnar sidan.');
+  });
+  window.addEventListener('beforeunload', e => {
+    if (document.querySelector('.card.editing[data-dirty="1"]')) { e.preventDefault(); e.returnValue = ''; }
+  });
+  // Spara-knappen: lås under sparning, och låt felet stå kvar tills det är löst
+  async function withSaving(card, fn) {
+    const btn = card.querySelector('.btn-save');
+    if (btn.disabled) return;
+    const label = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Sparar…';
+    const ok = await fn();
+    if (!ok && btn.isConnected) {
+      btn.disabled = false; btn.textContent = label;
+      setDraft(card.dataset.id, formDraft(card)); card.dataset.dirty = '1';
+      setNote(card, SAVE_FAIL_NOTE, true); toast(SAVE_FAIL);
+    }
+  }
+  function discardNew(btn) { const card = btn.closest('.card'); clearDraft(card.dataset.id); card.remove(); }
+  function discardDay(id) { clearDraft(id); cancelDay(id); }
+  function discardQuestion(id) { clearDraft(id); cancelQuestion(id); }
 
   // --- Datum (alltid lokala datumnycklar, aldrig toISOString) ---
   const pad = n => String(n).padStart(2, '0');
@@ -355,6 +427,7 @@
       qc.appendChild(card);
     });
     refreshMeta();
+    restoreDrafts();
   }
 
   function refreshMeta() {
@@ -380,7 +453,7 @@
     if (card && !card.classList.contains('editing')) card.innerHTML = renderDayInner(d);
     refreshMeta();
     const res = await updateRow(id, { [key]: d[key] });
-    if (!res) {
+    if (!saved(res)) {
       d[key] = prev;
       if (card && !card.classList.contains('editing')) card.innerHTML = renderDayInner(d);
       refreshMeta(); toast(SAVE_FAIL);
@@ -399,9 +472,10 @@
       <div class="field-full"><label>Biverkningar</label><textarea class="f-bi" placeholder="Något som känns annorlunda eller besvärligt? (valfritt)">${escapeHtml(d.biverkningar || '')}</textarea></div>
       <div class="edit-actions">
         <button class="btn-save" onclick="${isNew ? `saveNewDay('${id}')` : `saveDay('${id}')`}">Spara</button>
-        <button class="btn-cancel" onclick="${isNew ? `this.closest('.card').remove()` : `cancelDay('${id}')`}">Avbryt</button>
+        <button class="btn-cancel" onclick="${isNew ? `discardNew(this)` : `discardDay('${id}')`}">Avbryt</button>
         ${isNew ? '' : `<button class="btn-delete" onclick="removeRow(this,'${id}')">Ta bort dagen</button>`}
-      </div>`;
+      </div>
+      <div class="save-note"></div>`;
   }
 
   function readDayForm(card) {
@@ -414,19 +488,19 @@
     };
   }
 
-  function editDay(id) {
+  function editDay(id, noFocus) {
     const d = byId(id);
     const card = document.querySelector(`.card[data-id="${id}"]`);
     if (!d || !card || card.classList.contains('editing')) return;
     card.classList.add('editing');
     card.innerHTML = dayFormHTML(d, false);
-    card.querySelector('.f-ant').focus();
+    if (!noFocus) card.querySelector('.f-ant').focus();
   }
 
   function cancelDay(id) {
     const d = byId(id);
     const card = document.querySelector(`.card[data-id="${id}"]`);
-    card.classList.remove('editing');
+    card.classList.remove('editing'); delete card.dataset.dirty;
     card.innerHTML = renderDayInner(d);
   }
 
@@ -435,15 +509,19 @@
     const card = document.querySelector(`.card[data-id="${id}"]`);
     const data = readDayForm(card);
     if (!data.datum) { card.querySelector('.f-datum').focus(); toast('Välj ett datum först.'); return; }
-    const res = await updateRow(id, data);
-    if (!res) { toast(SAVE_FAIL); return; }
-    Object.assign(d, data);
-    renderAll();
+    await withSaving(card, async () => {
+      const res = await updateRow(id, data);
+      if (!saved(res)) return false;
+      clearDraft(id);
+      Object.assign(d, data);
+      renderAll();
+      return true;
+    });
   }
 
-  function addDay() {
+  function addDay(noFocus) {
     const dc = document.getElementById('dayCards');
-    if (dc.firstElementChild && dc.firstElementChild.dataset.id === 'new') { dc.firstElementChild.querySelector('.f-ant').focus(); return; }
+    if (dc.firstElementChild && dc.firstElementChild.dataset.id === 'new') { if (noFocus !== true) dc.firstElementChild.querySelector('.f-ant').focus(); return; }
     const ds = days();
     const taken = new Set(ds.map(d => d.datum));
     let datum = todayKey();
@@ -456,18 +534,22 @@
     card.className = 'card editing'; card.dataset.id = 'new';
     card.innerHTML = dayFormHTML({ id:'new', datum, dos:lastDose }, true);
     dc.insertBefore(card, dc.firstChild);
-    card.querySelector('.f-ant').focus();
+    if (noFocus !== true) card.querySelector('.f-ant').focus();
   }
 
   async function saveNewDay() {
     const card = document.querySelector('.card[data-id="new"]');
     const data = readDayForm(card);
     if (!data.datum) { card.querySelector('.f-datum').focus(); toast('Välj ett datum först.'); return; }
-    const row = { id: 'dag-' + Date.now(), kind:'dag', ...data };
-    const res = await insertRow(row);
-    if (!res) { toast(SAVE_FAIL); return; }
-    rows.push(res[0] || row);
-    renderAll();
+    await withSaving(card, async () => {
+      const row = { id: 'dag-' + Date.now(), kind:'dag', ...data };
+      const res = await insertRow(row);
+      if (!saved(res)) return false;
+      clearDraft('new');
+      rows.push(res[0]);
+      renderAll();
+      return true;
+    });
   }
 
   // --- Att ta upp med läkaren ---
@@ -477,24 +559,25 @@
       <div class="field-full"><textarea class="f-ant" placeholder="Detaljer (valfritt)">${escapeHtml(q.anteckning || '')}</textarea></div>
       <div class="edit-actions">
         <button class="btn-save" onclick="${isNew ? 'saveNewQuestion()' : `saveQuestion('${id}')`}">Spara</button>
-        <button class="btn-cancel" onclick="${isNew ? `this.closest('.card').remove()` : `cancelQuestion('${id}')`}">Avbryt</button>
+        <button class="btn-cancel" onclick="${isNew ? `discardNew(this)` : `discardQuestion('${id}')`}">Avbryt</button>
         ${isNew ? '' : `<button class="btn-delete" onclick="removeRow(this,'${id}')">Ta bort</button>`}
-      </div>`;
+      </div>
+      <div class="save-note"></div>`;
   }
 
-  function editQuestion(id) {
+  function editQuestion(id, noFocus) {
     const q = byId(id);
     const card = document.querySelector(`.card[data-id="${id}"]`);
     if (!q || !card || card.classList.contains('editing')) return;
     card.className = 'card editing';
     card.innerHTML = questionFormHTML(q, false);
-    card.querySelector('.f-title').focus();
+    if (!noFocus) card.querySelector('.f-title').focus();
   }
 
   function cancelQuestion(id) {
     const q = byId(id);
     const card = document.querySelector(`.card[data-id="${id}"]`);
-    card.className = 'card' + (q.done ? ' done' : '');
+    card.className = 'card' + (q.done ? ' done' : ''); delete card.dataset.dirty;
     card.innerHTML = renderQuestionInner(q);
   }
 
@@ -504,21 +587,25 @@
     const title = card.querySelector('.f-title').value.trim();
     if (!title) { card.querySelector('.f-title').focus(); return; }
     const data = { title, anteckning: card.querySelector('.f-ant').value.trim() };
-    const res = await updateRow(id, data);
-    if (!res) { toast(SAVE_FAIL); return; }
-    Object.assign(q, data);
-    cancelQuestion(id);
+    await withSaving(card, async () => {
+      const res = await updateRow(id, data);
+      if (!saved(res)) return false;
+      clearDraft(id);
+      Object.assign(q, data);
+      cancelQuestion(id);
+      return true;
+    });
   }
 
-  function addQuestion() {
+  function addQuestion(noFocus) {
     const qc = document.getElementById('qCards');
     const existing = qc.querySelector('.card[data-id="newq"]');
-    if (existing) { existing.querySelector('.f-title').focus(); return; }
+    if (existing) { if (noFocus !== true) existing.querySelector('.f-title').focus(); return; }
     const card = document.createElement('div');
     card.className = 'card editing'; card.dataset.id = 'newq';
     card.innerHTML = questionFormHTML({ id:'newq' }, true);
     qc.appendChild(card);
-    card.querySelector('.f-title').focus();
+    if (noFocus !== true) card.querySelector('.f-title').focus();
   }
 
   async function saveNewQuestion() {
@@ -532,10 +619,14 @@
       done: false,
       sort_order: qs.length ? Math.max(...qs.map(q => q.sort_order)) + 1 : 0
     };
-    const res = await insertRow(row);
-    if (!res) { toast(SAVE_FAIL); return; }
-    rows.push(res[0] || row);
-    renderAll();
+    await withSaving(card, async () => {
+      const res = await insertRow(row);
+      if (!saved(res)) return false;
+      clearDraft('newq');
+      rows.push(res[0]);
+      renderAll();
+      return true;
+    });
   }
 
   async function toggleDone(id) {
@@ -543,7 +634,7 @@
     q.done = !q.done;
     cancelQuestion(id); refreshMeta();
     const res = await updateRow(id, { done: q.done });
-    if (!res) { q.done = !q.done; cancelQuestion(id); refreshMeta(); toast(SAVE_FAIL); }
+    if (!saved(res)) { q.done = !q.done; cancelQuestion(id); refreshMeta(); toast(SAVE_FAIL); }
   }
 
   // --- Ta bort (två tryck, så inget försvinner av misstag) ---
@@ -555,6 +646,7 @@
     }
     const res = await deleteRow(id);
     if (!res) { toast('Kunde inte ta bort. Försök igen.'); return; }
+    clearDraft(id);
     rows = rows.filter(r => r.id !== id);
     renderAll();
   }
@@ -568,6 +660,7 @@
     }
     rows = data;
     renderAll();
+    if (document.querySelector('.card.editing[data-dirty="1"]')) toast('Ditt osparade utkast är tillbaka. Tryck Spara.');
   })();
 </script>
 
