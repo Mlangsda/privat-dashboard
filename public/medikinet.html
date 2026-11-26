@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>Medikinet-dagbok</title>
+<title>ADHD-medicinering</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -131,18 +131,24 @@
 
   /* REDIGERA */
   .card.editing { border-color:var(--accent); box-shadow:0 3px 16px rgba(150,120,180,0.13); }
-  .field-row { display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:9px; margin-bottom:9px; }
+  .field-row { display:grid; grid-template-columns:1.2fr 1fr 1fr 1fr; gap:9px; margin-bottom:9px; }
   .field label, .field-full label {
     display:block; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px;
     color:var(--text-secondary); margin-bottom:4px;
   }
   .field-full { margin-bottom:9px; }
-  .card input[type=text], .card input[type=date], .card input[type=time], .card textarea {
+  .card input[type=text], .card input[type=date], .card input[type=time], .card select, .card textarea {
     width:100%; font-family:inherit; border:1px solid var(--border); border-radius:9px;
     padding:8px 10px; font-size:14px; color:var(--text); background:#fff;
   }
   .card textarea { resize:vertical; min-height:84px; line-height:1.5; }
-  .card input:focus, .card textarea:focus { outline:none; border-color:var(--accent); }
+  .card select {
+    -webkit-appearance:none; appearance:none; cursor:pointer; padding-right:30px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%238a7a9e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 10px center;
+  }
+  .card .other-input { margin-top:6px; }
+  .card input:focus, .card select:focus, .card textarea:focus { outline:none; border-color:var(--accent); }
   .edit-title { font-weight:600; }
   .edit-actions { display:flex; gap:7px; margin-top:4px; }
   .edit-actions button { font-family:inherit; font-size:12.5px; font-weight:600; padding:8px 15px; border-radius:9px; border:none; cursor:pointer; }
@@ -195,7 +201,7 @@
 </div>
 
 <div class="hero">
-  <h1>Medikinet-dagbok</h1>
+  <h1>ADHD-medicinering</h1>
   <p id="heroSub">Dag för dag</p>
 </div>
 
@@ -232,6 +238,11 @@
     { key:'somn',   label:'Sömn' },
     { key:'aptit',  label:'Aptit' }
   ];
+
+  // Val i dagkortet. Egna värden som sparats på ett kort dyker upp som val nästa gång.
+  const BASE_MEDS  = ['Medikinet'];
+  const BASE_DOSES = ['5 mg', '10 mg', '20 mg', '30 mg', '40 mg', '50 mg', '60 mg'];
+  const OTHER = '__annan';
 
   // --- Supabase ---
   async function sbFetch(path, opts = {}) {
@@ -293,7 +304,7 @@
   }
   function fillForm(card, dr) {
     const set = (sel, v) => { const el = card.querySelector(sel); if (el && v != null) el.value = v; };
-    if (dr.kind === 'dag') { set('.f-datum', dr.datum); set('.f-dos', dr.dos); set('.f-tid', dr.tid_intag); set('.f-ant', dr.anteckning); set('.f-bi', dr.biverkningar); }
+    if (dr.kind === 'dag') { set('.f-datum', dr.datum); setChoice(card, 'f-med', dr.medicin); setChoice(card, 'f-dos', dr.dos); set('.f-tid', dr.tid_intag); set('.f-ant', dr.anteckning); set('.f-bi', dr.biverkningar); }
     else { set('.f-title', dr.title); set('.f-ant', dr.anteckning); }
     card.dataset.dirty = '1';
     setNote(card, 'Osparat utkast. Tryck Spara för att lägga in det i dagboken.');
@@ -354,6 +365,8 @@
   const dayNumber = k => { const s = startKey(); return s && k ? dayDiff(k, s) + 1 : null; };
   const isFilled = d => SCALES.some(s => d[s.key] != null) || (d.anteckning || '').trim() || (d.biverkningar || '').trim();
 
+  const medLabel = d => [(d.medicin || '').trim(), (d.dos || '').trim()].filter(Boolean).join(' ');
+
   // --- Rendera ---
   function renderDayInner(d) {
     const nr = dayNumber(d.datum);
@@ -369,7 +382,7 @@
     return `<div class="day-head">
         ${nr != null ? `<span class="day-nr">Dag ${nr}</span>` : ''}
         <span class="day-date">${d.datum ? niceDate(d.datum) : 'Inget datum'}</span>
-        ${(d.dos || '').trim() ? `<span class="day-chip">${escapeHtml(d.dos)}</span>` : ''}
+        ${medLabel(d) ? `<span class="day-chip">${escapeHtml(medLabel(d))}</span>` : ''}
         ${(d.tid_intag || '').trim() ? `<span class="day-chip time">kl ${escapeHtml(d.tid_intag)}</span>` : ''}
         <button type="button" class="card-edit-hint" onclick="editDay('${escapeAttr(d.id)}')">redigera</button>
       </div>
@@ -461,11 +474,47 @@
   }
 
   // --- Dagar ---
+  function choiceList(base, key) {
+    const seen = new Set(base);
+    days().forEach(d => { const v = (d[key] || '').trim(); if (v) seen.add(v); });
+    return [...seen];
+  }
+  const medChoices  = () => choiceList(BASE_MEDS, 'medicin');
+  const doseChoices = () => choiceList(BASE_DOSES, 'dos').sort((a, b) => (parseFloat(a) || 0) - (parseFloat(b) || 0) || a.localeCompare(b, 'sv'));
+  function choiceHTML(cls, list, value, otherLabel, placeholder) {
+    const v = (value || '').trim();
+    const isOther = !!v && !list.includes(v);
+    return `<select class="${cls}" onchange="toggleOther(this)">
+          ${v ? '' : '<option value="">Välj …</option>'}
+          ${list.map(o => `<option value="${escapeAttr(o)}"${o === v ? ' selected' : ''}>${escapeHtml(o)}</option>`).join('')}
+          <option value="${OTHER}"${isOther ? ' selected' : ''}>${otherLabel}</option>
+        </select>
+        <input class="${cls}-annan other-input" type="text" placeholder="${placeholder}" value="${isOther ? escapeAttr(v) : ''}"${isOther ? '' : ' hidden'}>`;
+  }
+  function toggleOther(sel) {
+    const inp = sel.parentElement.querySelector('.other-input');
+    inp.hidden = sel.value !== OTHER;
+    if (!inp.hidden) inp.focus();
+  }
+  function readChoice(card, cls) {
+    const sel = card.querySelector('.' + cls);
+    return sel.value === OTHER ? card.querySelector('.' + cls + '-annan').value.trim() : sel.value;
+  }
+  function setChoice(card, cls, value) {
+    if (value == null) return;
+    const sel = card.querySelector('.' + cls), inp = card.querySelector('.' + cls + '-annan');
+    if (!sel || !inp) return;
+    const v = String(value).trim();
+    if ([...sel.options].some(o => o.value === v)) { sel.value = v; inp.hidden = true; }
+    else if (v) { sel.value = OTHER; inp.value = v; inp.hidden = false; }
+  }
+
   function dayFormHTML(d, isNew) {
     const id = escapeAttr(d.id);
     return `<div class="field-row">
         <div class="field"><label>Datum</label><input class="f-datum" type="date" value="${escapeAttr(d.datum || '')}"></div>
-        <div class="field"><label>Dos</label><input class="f-dos" type="text" placeholder="t.ex. 20 mg" value="${escapeAttr(d.dos || '')}"></div>
+        <div class="field"><label>Medicin</label>${choiceHTML('f-med', medChoices(), d.medicin, 'Annan medicin …', 'Skriv medicinens namn')}</div>
+        <div class="field"><label>Styrka</label>${choiceHTML('f-dos', doseChoices(), d.dos, 'Annan styrka …', 't.ex. 45 mg')}</div>
         <div class="field"><label>Tog den klockan</label><input class="f-tid" type="time" value="${escapeAttr(d.tid_intag || '')}"></div>
       </div>
       <div class="field-full"><label>Hur jag mår</label><textarea class="f-ant" placeholder="Vad märker du i dag? Fokus, lugn, humör, kroppen, kvällen …">${escapeHtml(d.anteckning || '')}</textarea></div>
@@ -481,7 +530,8 @@
   function readDayForm(card) {
     return {
       datum: card.querySelector('.f-datum').value || null,
-      dos: card.querySelector('.f-dos').value.trim(),
+      medicin: readChoice(card, 'f-med'),
+      dos: readChoice(card, 'f-dos'),
       tid_intag: card.querySelector('.f-tid').value,
       anteckning: card.querySelector('.f-ant').value.trim(),
       biverkningar: card.querySelector('.f-bi').value.trim()
@@ -530,9 +580,10 @@
       datum = keyOf(next);
     }
     const lastDose = (ds.find(d => (d.dos || '').trim()) || {}).dos || '';
+    const lastMed = (ds.find(d => (d.medicin || '').trim()) || {}).medicin || BASE_MEDS[0];
     const card = document.createElement('div');
     card.className = 'card editing'; card.dataset.id = 'new';
-    card.innerHTML = dayFormHTML({ id:'new', datum, dos:lastDose }, true);
+    card.innerHTML = dayFormHTML({ id:'new', datum, medicin:lastMed, dos:lastDose }, true);
     dc.insertBefore(card, dc.firstChild);
     if (noFocus !== true) card.querySelector('.f-ant').focus();
   }
