@@ -171,6 +171,12 @@
   .add-card-btn.top { margin-bottom:10px; }
   .add-card-btn.bottom { margin-top:10px; }
 
+  /* KOMIHÅG-BILD */
+  .memo-card { padding:10px; }
+  .memo-card a { display:block; border-radius:8px; overflow:hidden; cursor:zoom-in; }
+  .memo-card img { display:block; width:100%; height:auto; }
+  .memo-caption { font-size:13px; color:#6d6280; line-height:1.5; padding:11px 7px 5px; }
+
   .loading { text-align:center; padding:50px 0; color:var(--text-secondary); font-size:14px; }
   footer { text-align:center; padding:34px 20px 10px; color:var(--text-secondary); font-size:12px; }
 
@@ -219,6 +225,20 @@
   </div>
 
   <div id="root"><div class="loading">Hämtar dagboken…</div></div>
+
+  <div class="section" id="sec-komihag">
+    <div class="section-header">
+      <div class="section-dot" style="background:var(--sky)"></div>
+      <span class="section-title">Läkarens genomgång</span>
+      <span class="section-meta">Komihåg</span>
+    </div>
+    <div class="card memo-card">
+      <a href="/bilder/lakarens-whiteboard.jpg" target="_blank" rel="noopener">
+        <img src="/bilder/lakarens-whiteboard.jpg" width="2505" height="2075" loading="lazy" alt="Läkarens whiteboard om medicinernas olika effekter">
+      </a>
+      <div class="memo-caption">Läkarens tavla om medicinernas olika effekter. Tryck på bilden för att förstora.</div>
+    </div>
+  </div>
 
 </div>
 
